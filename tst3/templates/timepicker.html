@@ -15,12 +15,12 @@ http://jonthornton.github.io/jquery-timepicker/
 
     <script>
         $(function() {
-            $('#stepExample1').timepicker({ 'step': 15 , 'timeFormat': 'H:i:s'});
+            $('#stepExample1').timepicker({ 'step': 15 , 'timeFormat': 'H:i'});
         });
     </script> 
     <script>
         $(function() {
-            $('#stepExample2').timepicker({ 'step': 15 , 'timeFormat': 'H:i:s'});
+            $('#stepExample2').timepicker({ 'step': 15 , 'timeFormat': 'H:i'});
         });
     </script> 
     {% endraw %}
@@ -30,7 +30,7 @@ http://jonthornton.github.io/jquery-timepicker/
     <h1>UID:  {{ UID }}</h1>
         
     <form method="POST" action="timepicker_done"><!-- Rounded switch -->
-        <input type="text", name="UID", value = {{UID}}>
+        <input type="hidden", name="UID", value = {{UID}}>
         <label>
             <input type="checkbox" name="active" value="true">Active
         </label>

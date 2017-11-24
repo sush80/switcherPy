@@ -5,6 +5,7 @@ import os.path
 from threading import Thread, Lock
 import copy
 
+
 app = Flask(__name__)
 
 class GLOBAL_DATA:
@@ -19,6 +20,9 @@ class GLOBAL_DATA:
         finally:
             self.mutex.release()
 
+    def _convertToTime(self, aString):
+        return datetime.datetime.strptime(aString, '%H:%M').time()
+
     def _getYamlFileName(self):
         return 'data.yml'
 
@@ -27,14 +31,23 @@ class GLOBAL_DATA:
         try:
             #with open(g_etYamlFileName(), 'w') as outfile:
             #    yaml.dump(data, outfile, default_flow_style=False)
-            uidStr = "UID" + uid
-            self.yamlData[uidStr]["active"] = active
-            self.yamlData[uidStr]["startTime"] = start
-            self.yamlData[uidStr]["endTime"] = end
-            
-            fName = self._getYamlFileName()
-            with open(fName, "w") as f:
-                yaml.dump(self.yamlData, f)
+            if active == "true":
+                try:
+                    self._convertToTime(start)
+                    print("start time is valid")
+                    self._convertToTime(end)
+                    print("end time is valid")
+
+                    uidStr = "UID" + uid
+                    self.yamlData[uidStr]["active"] = active
+                    self.yamlData[uidStr]["startTime"] = start
+                    self.yamlData[uidStr]["endTime"] = end
+                    
+                    fName = self._getYamlFileName()
+                    with open(fName, "w") as f:
+                        yaml.dump(self.yamlData, f)
+                except ValueError:
+                    print("could not convert some timestamp")
         finally:
             self.mutex.release()
 
