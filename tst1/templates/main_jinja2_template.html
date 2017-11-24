@@ -1,0 +1,31 @@
+<!-- 
+http://jonthornton.github.io/jquery-timepicker/
+
+-->
+
+
+<!DOCTYPE html>
+<head>
+    <title>{{ title }}</title>
+    {% raw %}
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/jquery.timepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/jquery.timepicker.css">
+    <script>
+        $(function() {
+            $('#stepExample2').timepicker({ 'step': 15 , 'timeFormat': 'H:i:s'});
+        });
+    </script> 
+    {% endraw %}
+</head>
+
+<body>
+    <h1>Hello, World!</h1>
+    <h2>The date and time on the server is: {{ time }}</h2>
+    
+    <input id="stepExample2" class="time ui-timepicker-input" autocomplete="off" type="text">
+
+
+    
+</body>
+</html>

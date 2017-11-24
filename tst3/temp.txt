@@ -1,0 +1,15 @@
+
+    {% raw %}
+   <!-- 
+    <script>
+        {{ '$' }}
+    </script>
+
+
+       <script>
+        $(function() {
+            $('#stepExample1').timepicker({ 'step': 15 });
+        });
+    </script>
+-->
+    {% endraw %}
