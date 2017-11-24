@@ -37,24 +37,6 @@ http://jonthornton.github.io/jquery-timepicker/
         <input id="stepExample1" class="time ui-timepicker-input" autocomplete="off" type="text", name=start>
         <input id="stepExample2" class="time ui-timepicker-input" autocomplete="off" type="text", name=end> 
         <input type="submit">        
-    </form>
-
-    <script type=text/javascript>
-    {% raw %}
-        $(function() {
-          $('a#report').bind('click', function() {
-            $.getJSON('/timepicker_report', {
-              start: $('input[name="start"]').val(),
-              end:   $('input[name="end"]').val()
-            });
-            return true;
-          });
-        });
-    {% endraw %}
-    </script>
-    <h1>jQuery Example</h1>
-
-    <p><a href=# id=report>report to server side</a>
-    
+    </form>    
 </body>
 </html>
