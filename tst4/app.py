@@ -218,7 +218,7 @@ def timepicker_report():
     endTime = request.form.get('end')
     active = request.form.get('active')
     UID = request.form.get('UID')
-    print("timepicker_report" +str(UID) + " " + str(active) + " " + str(startTime) + " " + str(endTime)
+    print("timepicker_report" +str(UID) + " " + str(active) + " " + str(startTime) + " " + str(endTime))
     errorText = _GDATA.updateConfigFile(uid = UID,active = active, start = startTime, end = endTime)
     print(" errtxt: " + errorText)
     templateData = {
