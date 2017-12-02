@@ -5,21 +5,46 @@ import yaml
 import os.path
 from threading import Thread, Lock
 import copy
+import os
 
 
 app = Flask(__name__)
 
 class GLOBAL_DATA:
     def __init__(self):
-        self.mutex = Lock()
+        self._mutex = Lock()
         self._loadYamlFile()
+        self._manualOverrideFlag = False
+        self._pinIsActiveStatus = False
+
+    def isManualOverrideFlagSet(self):
+        self._mutex.acquire()
+        val = copy.copy(self._manualOverrideFlag)
+        self._mutex.release()
+        return val
+
+    def setOverrideFlag(self, newValue):
+        self._mutex.acquire()
+        self._manualOverrideFlag = newValue
+        self._mutex.release()
+
+    def setPinIsActiveStatus(self, newVal):
+        self._mutex.acquire()
+        self._pinIsActiveStatus = newVal
+        self._mutex.release()
+
+    def getPinIsActiveStatus(self):
+        self._mutex.acquire()
+        val = copy.copy(self._pinIsActiveStatus)
+        self._mutex.release()
+        return val
 
     def yaml_data_get(self):
-        self.mutex.acquire()
+        self._mutex.acquire()
         try:
-            return copy.copy(self.yamlData)
+            return copy.copy(self._yamlData)
         finally:
-            self.mutex.release()
+            self._mutex.release()
 
     def _convertToTime(self, aString):
         return datetime.strptime(aString, '%H:%M').time()
@@ -28,7 +53,7 @@ class GLOBAL_DATA:
         return 'data.yml'
 
     def updateConfigFile(self, uid, active="false", start="", end=""):
-        self.mutex.acquire()
+        self._mutex.acquire()
         try:
             #with open(g_etYamlFileName(), 'w') as outfile:
             #    yaml.dump(data, outfile, default_flow_style=False)
@@ -39,46 +64,46 @@ class GLOBAL_DATA:
                     _end = self._convertToTime(end)
                     print("end time is valid")
                     if _end <= _start:
-                        return("start cannot be after end")
+                        return "start cannot be after end"
 
                     uidStr = "UID" + str(uid)
-                    self.yamlData[uidStr]["active"] = active
-                    self.yamlData[uidStr]["startTime"] = start
-                    self.yamlData[uidStr]["endTime"] = end
+                    self._yamlData[uidStr]["active"] = active
+                    self._yamlData[uidStr]["startTime"] = start
+                    self._yamlData[uidStr]["endTime"] = end
                     
                     fName = self._getYamlFileName()
                     with open(fName, "w") as f:
-                        yaml.dump(self.yamlData, f)
+                        yaml.dump(self._yamlData, f)
                 except ValueError:
-                    return("Error on time conversion")
+                    return "Error on time conversion"
         finally:
-            self.mutex.release()
+            self._mutex.release()
         return ""
 
 
     def yaml_isActive(self, uid):
-        self.mutex.acquire()
+        self._mutex.acquire()
         try:
             uidStr = "UID" + str(uid)
-            return self.yamlData[uidStr]["active"] == "true"
+            return self._yamlData[uidStr]["active"] == "true"
         finally:
-            self.mutex.release()
+            self._mutex.release()
 
     def yaml_info_get(self, uid):
-        self.mutex.acquire()
+        self._mutex.acquire()
         try:
             uidStr = "UID" + str(uid)
-            active = self.yamlData[uidStr]["active"] == "true"
-            startTime = self._convertToTime(self.yamlData[uidStr]["startTime"])
-            endTime = self._convertToTime(self.yamlData[uidStr]["endTime"])
+            active = self._yamlData[uidStr]["active"] == "true"
+            startTime = self._convertToTime(self._yamlData[uidStr]["startTime"])
+            endTime = self._convertToTime(self._yamlData[uidStr]["endTime"])
             return [active, startTime, endTime]
         finally:
-            self.mutex.release()
+            self._mutex.release()
 
     def _initYamlFile(self):
         print("creating default yaml file")
         fName = self._getYamlFileName()
-        self.yamlData = dict(
+        self._yamlData = dict(
                 UID0 = dict(
                     UID = '0',
                     active = 'false',
@@ -92,32 +117,51 @@ class GLOBAL_DATA:
                     endTime = '00:00')
                 )
         with open(fName, "w") as f:
-            yaml.dump(self.yamlData, f)
+            yaml.dump(self._yamlData, f)
 
 
     def _loadYamlFile(self):
-        self.mutex.acquire()
+        self._mutex.acquire()
         try:
             fName = self._getYamlFileName()
             if not os.path.isfile(fName) :
                 self._initYamlFile()
             with open(fName) as f:
                 # use safe_load instead load
-                self.yamlData = yaml.safe_load(f)
+                self._yamlData = yaml.safe_load(f)
         finally:
-            self.mutex.release()
+            self._mutex.release()
 
 
 _GDATA = GLOBAL_DATA()
 
 
+@app.route("/index.html")
+def index_html():
+    global _GDATA
+    print("index_html")
+    
+    return ROOT()
+
+
+
 @app.route("/")
-def index_html(errorString  = ''):
+def ROOT(errorString  = ''):
     global _GDATA
     print("index html")
     now = datetime.now()
     timeString = now.strftime("%Y-%m-%d %H:%M")
     yamlData = _GDATA.yaml_data_get()
+
+    if _GDATA.getPinIsActiveStatus():
+        current_status_active = "ON"
+    else:
+        current_status_active = "off"
+
+    if _GDATA.isManualOverrideFlagSet():
+        force_override_checked = "checked"
+    else:
+        force_override_checked = ""
     templateData = {
         'error_text' : errorString,
         'title' : 'HELLO!',
@@ -127,9 +171,30 @@ def index_html(errorString  = ''):
         'uid0_stop'  : yamlData["UID0"]["endTime"],
         'uid1_active': yamlData["UID1"]["active"],
         'uid1_start' : yamlData["UID1"]["startTime"],
-        'uid1_stop'  : yamlData["UID1"]["endTime"]
+        'uid1_stop'  : yamlData["UID1"]["endTime"],
+        'current_status_active' : current_status_active,
+        'force_override_checked' :force_override_checked
     }
     return render_template('main_jinja2_template.html', **templateData)
+
+
+@app.route('/index_onOffDone', methods=['POST'])
+def index_report():
+    global _GDATA
+    print("index_report")
+    print(request.args)
+
+    if request.form.get('active'):
+        print(f" index ON ")
+        _GDATA.setOverrideFlag(True)
+    else:
+        print(f" index off ")
+        _GDATA.setOverrideFlag(False)
+    
+    templateData = {
+        'tbd' : 'tbd'
+    }
+    return render_template('action_done.html', **templateData)
 
 @app.route("/timepicker.html", methods=['GET'])
 def timepicker():
@@ -155,7 +220,23 @@ def timepicker_report():
     UID = request.form.get('UID')
     print(f"timepicker_report {UID} {active} {startTime} {endTime} ")
     errorText = _GDATA.updateConfigFile(uid = UID,active = active, start = startTime, end = endTime)
-    return index_html(errorText)
+    print(f" errtxt: {errorText}")
+    templateData = {
+        'errorText' : errorText
+    }
+    return render_template('action_done.html', **templateData)
+
+
+@app.route('/reset.html')
+def reset_html():
+    templateData = {
+        'tbd' : ""
+    }
+    return render_template('reset.html',**templateData)
+
+@app.route('/doReset')
+def doReset():
+    os.system("sudo reboot")
 
 
 class myThread (Thread):
@@ -166,10 +247,11 @@ class myThread (Thread):
         self.pinActiveCurrent = False
     
     def processUid(self, uid):
-        tim = datetime.now.time()
-        [active, startTime, endTime] = _GDATA.yaml_info_get(uid)
-        if active and tim >= startTime and time <= endTime:
+        tim = datetime.now().time()
+        [timerIsActive, startTime, endTime] = _GDATA.yaml_info_get(uid)
+        if timerIsActive and (tim >= startTime) and (tim <= endTime):
             self.pinActiveNew = True
+            print (f"Timer {uid} is active")
 
     def run(self):
         global _GDATA
@@ -177,10 +259,14 @@ class myThread (Thread):
         while(1):
             time.sleep(1)
             self.pinActiveNew = False
-            for uid in range(1):
+            for uid in range(2):
                 self.processUid(uid)
+            if _GDATA.isManualOverrideFlagSet():
+                print ("Override Flag set, will switch")
+                self.pinActiveNew = True
             if self.pinActiveCurrent != self.pinActiveNew:
                 self.pinActiveCurrent = self.pinActiveNew
+                _GDATA.setPinIsActiveStatus(self.pinActiveCurrent)
                 print ("switching pin to new: " + str(self.pinActiveCurrent))
         print ("Exiting " + self.name)
 

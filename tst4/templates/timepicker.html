@@ -1,0 +1,42 @@
+<!-- 
+http://jonthornton.github.io/jquery-timepicker/
+
+-->
+
+
+<!DOCTYPE html>
+<head>
+    <title>{{ title }}</title>
+    {% raw %}
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/jquery.timepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/jquery.timepicker.css">
+
+
+    <script>
+        $(function() {
+            $('#stepExample1').timepicker({ 'step': 15 , 'timeFormat': 'H:i'});
+        });
+    </script> 
+    <script>
+        $(function() {
+            $('#stepExample2').timepicker({ 'step': 15 , 'timeFormat': 'H:i'});
+        });
+    </script> 
+    {% endraw %}
+</head>
+
+<body>
+    <h1>UID:  {{ UID }}</h1>
+        
+    <form method="POST" action="timepicker_done"><!-- Rounded switch -->
+        <input type="hidden", name="UID", value = {{UID}}>
+        <label>
+            <input type="checkbox" name="active" value="true">Active
+        </label>
+        <input id="stepExample1" class="time ui-timepicker-input" autocomplete="off" type="text", name=start>
+        <input id="stepExample2" class="time ui-timepicker-input" autocomplete="off" type="text", name=end> 
+        <input type="submit">        
+    </form>    
+</body>
+</html>
