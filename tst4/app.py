@@ -164,7 +164,7 @@ def ROOT(errorString  = ''):
         force_override_checked = ""
     templateData = {
         'error_text' : errorString,
-        'title' : 'HELLO!',
+        'title' : 'Switcher!',
         'time': timeString,
         'uid0_active': yamlData["UID0"]["active"],
         'uid0_start' : yamlData["UID0"]["startTime"],
