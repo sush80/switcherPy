@@ -185,10 +185,10 @@ def index_report():
     print(request.args)
 
     if request.form.get('active'):
-        print(f" index ON ")
+        print(" index ON ")
         _GDATA.setOverrideFlag(True)
     else:
-        print(f" index off ")
+        print(" index off ")
         _GDATA.setOverrideFlag(False)
     
     templateData = {
@@ -218,9 +218,9 @@ def timepicker_report():
     endTime = request.form.get('end')
     active = request.form.get('active')
     UID = request.form.get('UID')
-    print(f"timepicker_report {UID} {active} {startTime} {endTime} ")
+    print("timepicker_report" +str(UID) + " " + str(active) + " " + str(startTime) + " " + str(endTime)
     errorText = _GDATA.updateConfigFile(uid = UID,active = active, start = startTime, end = endTime)
-    print(f" errtxt: {errorText}")
+    print(" errtxt: " + errorText)
     templateData = {
         'errorText' : errorText
     }
@@ -251,7 +251,7 @@ class myThread (Thread):
         [timerIsActive, startTime, endTime] = _GDATA.yaml_info_get(uid)
         if timerIsActive and (tim >= startTime) and (tim <= endTime):
             self.pinActiveNew = True
-            print (f"Timer {uid} is active")
+            print ("Timer " + str(uid) + " is active")
 
     def run(self):
         global _GDATA
