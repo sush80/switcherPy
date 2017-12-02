@@ -14,29 +14,46 @@ http://jonthornton.github.io/jquery-timepicker/
     <h1><p style="color:red">{{ error_text }}</p></h1>
 
     <h1>Main Page</h1>
-    The date and time on the server is: {{ time }}<br>
+    Server-time: {{ time }}<br>
     
     <h3> Current Status:</h3>
-    {{current_status_active}} <br>
+    {% if current_status_active == 'on' %}
+    <p style="color:green">On</p>
+    {% else %}
+    <p style="color:red">Off</p>
+    {% endif %}
     
-    <h3> <a href="timepicker.html?UID=0" >Timer UID0</a></h3>
-    Active: {{uid0_active}} <br>
+    <h3>Manual Override</h3>
+    Allows override to ON only
+    <form method="POST" action="">
+        <input type="hidden", name="action", value = "setOverrideFlag">
+        <label>
+            <input type="checkbox" name="active" value="true" {{force_override_checked}}>Force turn on
+        </label>
+        <input type="submit">        
+    </form>  
+
+    <h3> <a href="timepicker.html?UID=0&start={{uid0_start}}&stop={{uid0_stop}}" >Timer UID0</a></h3>
+    
+    {% if uid0_active == 'true' %}
+    <p style="color:green">On</p>
+    {% else %}
+    <p style="color:red">Off</p>
+    {% endif %}
     Start: {{uid0_start}} <br>
     Stop: {{uid0_stop}} <br>    
 
     
-    <h3> <a href="timepicker.html?UID=1" >Timer UID1</a></h3>
-    Active: {{uid1_active}} <br>
+    <h3> <a href="timepicker.html?UID=1&start={{uid1_start}}&stop={{uid1_stop}}" >Timer UID1</a></h3>
+    {% if uid1_active == 'true' %}
+    <p style="color:green">On</p>
+    {% else %}
+    <p style="color:red">Off</p>
+    {% endif %}
     Start: {{uid1_start}} <br>
     Stop: {{uid1_stop}} <br>    
 
-    <h3>Manual Override to on</h3>
-    <form method="POST" action="index_onOffDone">
-            <label>
-                <input type="checkbox" name="active" value="true" {{force_override_checked}}>Force turn on?
-            </label>
-            <input type="submit">        
-    </form>  
+
 
     <br><br><br><br><br><br><br><br><br>
 
