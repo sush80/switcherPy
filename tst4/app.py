@@ -65,17 +65,20 @@ class GLOBAL_DATA:
                     print("end time is valid")
                     if _end <= _start:
                         return "start cannot be after end"
-
-                    uidStr = "UID" + str(uid)
-                    self._yamlData[uidStr]["active"] = active
-                    self._yamlData[uidStr]["startTime"] = start
-                    self._yamlData[uidStr]["endTime"] = end
-                    
-                    fName = self._getYamlFileName()
-                    with open(fName, "w") as f:
-                        yaml.dump(self._yamlData, f)
                 except ValueError:
                     return "Error on time conversion"
+            else:
+                active = "false"
+
+            uidStr = "UID" + str(uid)
+            self._yamlData[uidStr]["active"] = active
+            self._yamlData[uidStr]["startTime"] = start
+            self._yamlData[uidStr]["endTime"] = end
+            
+            fName = self._getYamlFileName()
+            with open(fName, "w") as f:
+                yaml.dump(self._yamlData, f)
+
         finally:
             self._mutex.release()
         return ""
