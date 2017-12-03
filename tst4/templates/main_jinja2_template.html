@@ -18,9 +18,9 @@ http://jonthornton.github.io/jquery-timepicker/
     
     <h3> Current Status:</h3>
     {% if current_status_active == 'on' %}
-    <p style="color:green">On</p>
+    <p style="color:green">Pin: On</p>
     {% else %}
-    <p style="color:red">Off</p>
+    <p style="color:red">Pin: Off</p>
     {% endif %}
     
     <h3>Manual Override</h3>
@@ -36,9 +36,9 @@ http://jonthornton.github.io/jquery-timepicker/
     <h3> <a href="timepicker.html?UID=0&start={{uid0_start}}&stop={{uid0_stop}}" >Timer UID0</a></h3>
     
     {% if uid0_active == 'true' %}
-    <p style="color:green">On</p>
+    <p style="color:green">Uid0: On</p>
     {% else %}
-    <p style="color:red">Off</p>
+    <p style="color:red">Uid0: Off</p>
     {% endif %}
     Start: {{uid0_start}} <br>
     Stop: {{uid0_stop}} <br>    
@@ -46,9 +46,9 @@ http://jonthornton.github.io/jquery-timepicker/
     
     <h3> <a href="timepicker.html?UID=1&start={{uid1_start}}&stop={{uid1_stop}}" >Timer UID1</a></h3>
     {% if uid1_active == 'true' %}
-    <p style="color:green">On</p>
+    <p style="color:green">Uid1: On</p>
     {% else %}
-    <p style="color:red">Off</p>
+    <p style="color:red">Uid1: Off</p>
     {% endif %}
     Start: {{uid1_start}} <br>
     Stop: {{uid1_stop}} <br>    

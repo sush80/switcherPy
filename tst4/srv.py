@@ -10,7 +10,7 @@ import os
 
 app = Flask(__name__)
 
-class GLOBAL_DATA:
+class GLOBAL_DATA():
     def __init__(self):
         self._mutex = Lock()
         self._loadYamlFile()
@@ -92,20 +92,51 @@ class GLOBAL_DATA:
         finally:
             self._mutex.release()
 
+
+    def _processUid(self, uid):
+        now = datetime.now()
+        if now.year <= 2017:
+            print("WARN: local clock not up to date, skipping _processUid")
+            return False
+        tim = now.time()
+
+        [timerIsActive, startTime, stopTime] = self._yaml_info_get(uid)
+        if timerIsActive and (tim >= startTime) and (tim <= stopTime):
+            print ("Timer " + str(uid) + " is active")
+            return True
+        return False
+
+    def process(self):
+        self._mutex.acquire()
+        pinActiveNew = False
+        for uid in range(2):
+            if self._processUid(uid):
+                pinActiveNew = True
+        if self._manualOverrideFlag:
+            print ("Override Flag set, will switch")
+            pinActiveNew = True
+        if self._pinIsActiveStatus != pinActiveNew:
+            self._pinIsActiveStatus = pinActiveNew
+            print ("switching pin to new: " + str(self._pinIsActiveStatus))
+        self._mutex.release()
+
     def yaml_info_get(self, uid):
         self._mutex.acquire()
         try:
-            uidStr = "UID" + str(uid)
-            active = self._yamlData[uidStr]["active"] == "true"
-            try:
-                startTime = self._convertToTime(self._yamlData[uidStr]["startTime"])
-                stopTime = self._convertToTime(self._yamlData[uidStr]["stopTime"])
-            except:
-                startTime = ""
-                stopTime = ""
-            return [active, startTime, stopTime]
+            return self._yaml_info_get(uid)
         finally:
             self._mutex.release()
+
+    def _yaml_info_get(self, uid):
+        uidStr = "UID" + str(uid)
+        active = self._yamlData[uidStr]["active"] == "true"
+        try:
+            startTime = self._convertToTime(self._yamlData[uidStr]["startTime"])
+            stopTime = self._convertToTime(self._yamlData[uidStr]["stopTime"])
+        except:
+            startTime = ""
+            stopTime = ""
+        return [active, startTime, stopTime]
 
     def _initYamlFile(self):
         print("creating default yaml file")
@@ -128,16 +159,12 @@ class GLOBAL_DATA:
 
 
     def _loadYamlFile(self):
-        self._mutex.acquire()
-        try:
-            fName = self._getYamlFileName()
-            if not os.path.isfile(fName) :
-                self._initYamlFile()
-            with open(fName) as f:
-                # use safe_load instead load
-                self._yamlData = yaml.safe_load(f)
-        finally:
-            self._mutex.release()
+        fName = self._getYamlFileName()
+        if not os.path.isfile(fName) :
+            self._initYamlFile()
+        with open(fName) as f:
+            # use safe_load instead load
+            self._yamlData = yaml.safe_load(f)
 
 
 _GDATA = GLOBAL_DATA()
@@ -154,7 +181,6 @@ def index_html():
 @app.route("/", methods=['GET', 'POST'])
 def ROOT():
     global _GDATA
-    global THREAD_PINWORKER
     errorString = ""
     print("root")
     now = datetime.now()
@@ -178,7 +204,7 @@ def ROOT():
     else:
         print("no action")
     
-    THREAD_PINWORKER.process()
+    _GDATA.process()
 
     current_status_active = "off"
     if _GDATA.getPinIsActiveStatus():
@@ -206,8 +232,6 @@ def ROOT():
 
 @app.route("/timepicker.html", methods=['GET'])
 def timepicker():
-    now = datetime.now()
-    timeString = now.strftime("%Y-%m-%d %H:%M")
     uid = request.args.get('UID')
     if uid == None:
         raise Exception("uid == none")
@@ -238,35 +262,14 @@ class myThread (Thread):
         self.threadID = threadID
         self.name = name
         self.pinActiveCurrent = False
-        self._mutex = Lock()
     
-    def _processUid(self, uid):
-        tim = datetime.now().time()
-        [timerIsActive, startTime, stopTime] = _GDATA.yaml_info_get(uid)
-        if timerIsActive and (tim >= startTime) and (tim <= stopTime):
-            self.pinActiveNew = True
-            print ("Timer " + str(uid) + " is active")
-
-    def process(self):
-        self._mutex.acquire()
-        self.pinActiveNew = False
-        for uid in range(2):
-            self._processUid(uid)
-        if _GDATA.isManualOverrideFlagSet():
-            print ("Override Flag set, will switch")
-            self.pinActiveNew = True
-        if self.pinActiveCurrent != self.pinActiveNew:
-            self.pinActiveCurrent = self.pinActiveNew
-            _GDATA.setPinIsActiveStatus(self.pinActiveCurrent)
-            print ("switching pin to new: " + str(self.pinActiveCurrent))
-        self._mutex.release()
 
     def run(self):
         global _GDATA
         print ("Starting " + self.name)
         while(1):
             time.sleep(10)
-            self.process()
+            _GDATA.process()
         print ("Exiting " + self.name)
 
 if __name__ == "__main__":
