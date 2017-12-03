@@ -1,2 +1,2 @@
-UID0: {UID: '0', active: 'false', startTime: '', stopTime: ''}
+UID0: {UID: '0', active: 'true', startTime: '00:30', stopTime: '01:00'}
 UID1: {UID: '1', active: 'false', startTime: '', stopTime: ''}

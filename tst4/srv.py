@@ -6,7 +6,24 @@ import os.path
 from threading import Thread, Lock
 import copy
 import os
+import logging
 
+
+logger = logging.getLogger('myserver')
+logger.setLevel(logging.DEBUG)
+# create file handler which logs even debug messages
+fh = logging.FileHandler('myserver.log')
+fh.setLevel(logging.DEBUG)
+# create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.ERROR)
+# create formatter and add it to the handlers
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+# add the handlers to the logger
+#logger.addHandler(fh)
+logger.addHandler(ch)
 
 app = Flask(__name__)
 
@@ -60,9 +77,9 @@ class GLOBAL_DATA():
             if active == "true":
                 try:
                     _start = self._convertToTime(start)
-                    print("start time is valid")
+                    logger.debug("start time is valid")
                     _end = self._convertToTime(end)
-                    print("end time is valid")
+                    logger.debug("end time is valid")
                     if _end <= _start:
                         return "start cannot be after end"
                 except ValueError:
@@ -96,13 +113,13 @@ class GLOBAL_DATA():
     def _processUid(self, uid):
         now = datetime.now()
         if now.year <= 2017:
-            print("WARN: local clock not up to date, skipping _processUid")
+            logger.warning("WARN: local clock not up to date, skipping _processUid")
             return False
         tim = now.time()
 
         [timerIsActive, startTime, stopTime] = self._yaml_info_get(uid)
         if timerIsActive and (tim >= startTime) and (tim <= stopTime):
-            print ("Timer " + str(uid) + " is active")
+            logger.debug ("Timer " + str(uid) + " is active")
             return True
         return False
 
@@ -113,11 +130,11 @@ class GLOBAL_DATA():
             if self._processUid(uid):
                 pinActiveNew = True
         if self._manualOverrideFlag:
-            print ("Override Flag set, will switch")
+            logger.debug ("Override Flag set, will switch")
             pinActiveNew = True
         if self._pinIsActiveStatus != pinActiveNew:
             self._pinIsActiveStatus = pinActiveNew
-            print ("switching pin to new: " + str(self._pinIsActiveStatus))
+            logger.debug ("switching pin to new: " + str(self._pinIsActiveStatus))
         self._mutex.release()
 
     def yaml_info_get(self, uid):
@@ -139,7 +156,7 @@ class GLOBAL_DATA():
         return [active, startTime, stopTime]
 
     def _initYamlFile(self):
-        print("creating default yaml file")
+        logger.debug("creating default yaml file")
         fName = self._getYamlFileName()
         self._yamlData = dict(
                 UID0 = dict(
@@ -172,9 +189,9 @@ _GDATA = GLOBAL_DATA()
 
 @app.route("/index.html", methods=['GET', 'POST'])
 def index_html():
-    #print("index_html")    
+    #logger.debug("index_html")    
     #if request.form.get('test'):
-    #    print("test found")
+    #    logger.debug("test found")
     return ROOT()
 
 
@@ -182,27 +199,27 @@ def index_html():
 def ROOT():
     global _GDATA
     errorString = ""
-    print("root")
+    logger.debug("root")
     now = datetime.now()
     timeString = now.strftime("%Y-%m-%d %H:%M")
     yamlData = _GDATA.yaml_data_get()
 
     if request.form.get('action') == "setOverrideFlag":
         if request.form.get('active'):
-            print(" override ON ")
+            logger.debug(" override ON ")
             _GDATA.setOverrideFlag(True)
         else:
-            print(" override off ")
+            logger.debug(" override off ")
             _GDATA.setOverrideFlag(False)
     elif request.form.get('action') == "setAlarmTimes":
         startTime = request.form.get('start')
         stopTime = request.form.get('stop')
         active = request.form.get('active')
         UID = request.form.get('UID')
-        print("setAlarmTimes: " +str(UID) + " " + str(active) + " " + str(startTime) + " " + str(stopTime))
+        logger.debug("setAlarmTimes: " +str(UID) + " " + str(active) + " " + str(startTime) + " " + str(stopTime))
         errorString = _GDATA.updateConfigFile(uid = UID,active = active, start = startTime, end = stopTime)
     else:
-        print("no action")
+        logger.debug("no action")
     
     _GDATA.process()
 
@@ -266,11 +283,11 @@ class myThread (Thread):
 
     def run(self):
         global _GDATA
-        print ("Starting " + self.name)
+        logger.debug ("Starting " + self.name)
         while(1):
             time.sleep(10)
             _GDATA.process()
-        print ("Exiting " + self.name)
+        logger.debug ("Exiting " + self.name)
 
 if __name__ == "__main__":
     THREAD_PINWORKER = myThread(1, "PinWorker")
