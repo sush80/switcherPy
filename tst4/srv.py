@@ -16,7 +16,7 @@ fh = logging.FileHandler('myserver.log')
 fh.setLevel(logging.DEBUG)
 # create console handler with a higher log level
 ch = logging.StreamHandler()
-ch.setLevel(logging.ERROR)
+ch.setLevel(logging.DEBUG)
 # create formatter and add it to the handlers
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
@@ -26,6 +26,11 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 app = Flask(__name__)
+
+class UserInputException(Exception):
+    pass
+
+
 
 class GLOBAL_DATA():
     def __init__(self):
@@ -64,8 +69,11 @@ class GLOBAL_DATA():
             self._mutex.release()
 
     def _convertToTime(self, aString):
-        return datetime.strptime(aString, '%H:%M').time()
-
+        try:
+           return datetime.strptime(aString, '%H:%M').time()
+        except:
+            raise UserInputException("cannot convert time string " + aString)
+        
     def _getYamlFileName(self):
         return 'data.yml'
 
@@ -77,13 +85,13 @@ class GLOBAL_DATA():
             if active == "true":
                 try:
                     _start = self._convertToTime(start)
-                    logger.debug("start time is valid")
+                    #logger.debug("start time is valid")
                     _end = self._convertToTime(end)
-                    logger.debug("end time is valid")
+                    #logger.debug("end time is valid")
                     if _end <= _start:
-                        return "start cannot be after end"
+                        raise UserInputException("End Time must be greater than Start Time")
                 except ValueError:
-                    return "Error on time conversion"
+                    raise UserInputException("Error on time conversion")
             else:
                 active = "false"
 
@@ -98,7 +106,7 @@ class GLOBAL_DATA():
 
         finally:
             self._mutex.release()
-        return ""
+        return 
 
 
     def yaml_isActive(self, uid):
@@ -197,39 +205,46 @@ def index_html():
 
 @app.route("/", methods=['GET', 'POST'])
 def ROOT():
-    global _GDATA
-    errorString = ""
-    logger.debug("root")
-    now = datetime.now()
-    timeString = now.strftime("%Y-%m-%d %H:%M")
-    yamlData = _GDATA.yaml_data_get()
-
-    if request.form.get('action') == "setOverrideFlag":
-        if request.form.get('active'):
-            logger.debug(" override ON ")
-            _GDATA.setOverrideFlag(True)
-        else:
-            logger.debug(" override off ")
-            _GDATA.setOverrideFlag(False)
-    elif request.form.get('action') == "setAlarmTimes":
-        startTime = request.form.get('start')
-        stopTime = request.form.get('stop')
-        active = request.form.get('active')
-        UID = request.form.get('UID')
-        logger.debug("setAlarmTimes: " +str(UID) + " " + str(active) + " " + str(startTime) + " " + str(stopTime))
-        errorString = _GDATA.updateConfigFile(uid = UID,active = active, start = startTime, end = stopTime)
-    else:
-        logger.debug("no action")
-    
-    _GDATA.process()
-
     current_status_active = "off"
-    if _GDATA.getPinIsActiveStatus():
-        current_status_active = "on"
-    
+    errorString = ""
     force_override_checked = ""
-    if _GDATA.isManualOverrideFlagSet():
-        force_override_checked = "checked"
+    try:
+        global _GDATA
+        logger.debug("root html")
+        now = datetime.now()
+        timeString = now.strftime("%Y-%m-%d %H:%M")
+        yamlData = _GDATA.yaml_data_get()
+
+        if request.form.get('action') == "setOverrideFlag":
+            if request.form.get('active'):
+                logger.debug(" override ON ")
+                _GDATA.setOverrideFlag(True)
+            else:
+                logger.debug(" override off ")
+                _GDATA.setOverrideFlag(False)
+        elif request.form.get('action') == "setAlarmTimes":
+            startTime = request.form.get('start')
+            stopTime = request.form.get('stop')
+            active = request.form.get('active')
+            UID = request.form.get('UID')
+            logger.debug("setAlarmTimes: " +str(UID) + " " + str(active) + " " + str(startTime) + " " + str(stopTime))
+            errorString = _GDATA.updateConfigFile(uid = UID,active = active, start = startTime, end = stopTime)
+        else:
+            logger.debug("no action")
+        
+        _GDATA.process()
+
+        if _GDATA.getPinIsActiveStatus():
+            current_status_active = "on"
+        
+        if _GDATA.isManualOverrideFlagSet():
+            force_override_checked = "checked"
+    except UserInputException as e:
+        logger.error("Caugth UserInputException " + str(e))
+        errorString = str(e)
+    except Exception as e:
+        logger.error("Caugth Exception " + str(e))
+        errorString = str(e)
         
     templateData = {
         'error_text' : errorString,
