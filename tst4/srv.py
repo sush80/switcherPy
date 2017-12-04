@@ -120,8 +120,8 @@ class GLOBAL_DATA():
 
     def _processUid(self, uid):
         now = datetime.now()
-        if now.year <= 2017:
-            logger.warning("WARN: local clock not up to date, skipping _processUid")
+        if now.year < 2017:
+            logger.warning("local clock not up to date, skipping _processUid: " + str(now))
             return False
         tim = now.time()
 
