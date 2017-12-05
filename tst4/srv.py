@@ -11,7 +11,7 @@ import ptvsd
 ptvsd.enable_attach("switcher", address = ('0.0.0.0', 3000))
 
 #Enable the below line of code only if you want the application to wait untill the debugger has attached to it
-#ptvsd.wait_for_attach()
+ptvsd.wait_for_attach()
 
 logger = logging.getLogger('myserver')
 logger.setLevel(logging.DEBUG)
