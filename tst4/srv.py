@@ -8,7 +8,8 @@ import copy
 import os
 import logging
 import ptvsd
-ptvsd.enable_attach("switcher", address = ('0.0.0.0', 3000))
+import RPi.GPIO as GPIO
+#ptvsd.enable_attach("switcher", address = ('0.0.0.0', 3000))
 
 #Enable the below line of code only if you want the application to wait untill the debugger has attached to it
 #ptvsd.wait_for_attach()
@@ -42,6 +43,10 @@ class GLOBAL_DATA():
         self._loadYamlFile()
         self._manualOverrideFlag = False
         self._pinIsActiveStatus = False
+        self._relaisPinNumber = 12  # pin12 = GPIO18
+        GPIO.setmode(GPIO.BOARD) # Set the board mode to numbers pins by physical location
+        GPIO.setup(self._relaisPinNumber, GPIO.OUT) # Set pin mode as output
+        GPIO.output(self._relaisPinNumber, GPIO.LOW)
 
     def isManualOverrideFlagSet(self):
         self._mutex.acquire()
@@ -147,6 +152,10 @@ class GLOBAL_DATA():
         if self._pinIsActiveStatus != pinActiveNew:
             self._pinIsActiveStatus = pinActiveNew
             logger.debug ("switching pin to new: " + str(self._pinIsActiveStatus))
+            if self._pinIsActiveStatus:
+                GPIO.output(self._relaisPinNumber, GPIO.HIGH)
+            else:
+                GPIO.output(self._relaisPinNumber, GPIO.LOW)
         self._mutex.release()
 
     def yaml_info_get(self, uid):
