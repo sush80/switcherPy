@@ -8,6 +8,7 @@ import copy
 import os,sys
 import logging
 import ptvsd
+import thingspeak
 
 
 try:
@@ -41,6 +42,31 @@ app = Flask(__name__)
 
 class UserInputException(Exception):
     pass
+
+
+with open("DO_NOT_ADD_TO_GIT_THINGSPEAK_CHANNEL_WRITE_KEY.txt", "r") as myfile:
+    THINGSPEAK_CHANNEL_write_key=myfile.readlines()
+    print(THINGSPEAK_CHANNEL_write_key)
+
+THINGSPEAK_CHANNEL = thingspeak.Channel(id=380347,write_key=THINGSPEAK_CHANNEL_write_key)
+
+def online_update_temperature():
+    temp = getTemperature()
+    try:
+        THINGSPEAK_CHANNEL.update({1:temp})
+    except Exception as e:
+        logger.error("could not update online data " + str(e))
+def online_update_SwitchingOn(newVal):
+    try:
+        THINGSPEAK_CHANNEL.update({2:newVal})
+    except Exception as e:
+        logger.error("could not update online data " + str(e))
+def online_update_Bootup():
+    try:
+        THINGSPEAK_CHANNEL.update({3:"now"})
+    except Exception as e:
+        logger.error("could not update online data " + str(e))
+       
 
 
 
@@ -161,8 +187,10 @@ class GLOBAL_DATA():
             logger.debug ("switching pin to new: " + str(self._pinIsActiveStatus))
             if self._pinIsActiveStatus:
                 GPIO.output(self._relaisPinNumber, GPIO.HIGH)
+                online_update_SwitchingOn(1)
             else:
                 GPIO.output(self._relaisPinNumber, GPIO.LOW)
+                online_update_SwitchingOn(0)
         self._mutex.release()
 
     def yaml_info_get(self, uid):
@@ -213,14 +241,20 @@ class GLOBAL_DATA():
 
 
 def getTemperature():
-    file = open('/sys/bus/w1/devices/28-0317019e9eff/w1_slave')
-    filecontent = file.read()
-    file.close()
+    try:
+        file = open('/sys/bus/w1/devices/28-0317019e9eff/w1_slave')
+        filecontent = file.read()
+        file.close()
 
-    stringvalue = filecontent.split("\n")[1].split(" ")[9]
-    temperature = float(stringvalue[2:]) / 1000
-    retVal = '%6.2f' % temperature 
-    return(retVal)
+        stringvalue = filecontent.split("\n")[1].split(" ")[9]
+        temperature = float(stringvalue[2:]) / 1000
+        retVal = '%6.2f' % temperature 
+        return(retVal)
+    except Exception as e:
+        logger.error("could not read temperature: " + str(e))
+        return 0.0
+
+
 
 
 _GDATA = GLOBAL_DATA()
@@ -331,12 +365,18 @@ class myThread (Thread):
     def run(self):
         global _GDATA
         logger.debug ("Starting " + self.name)
+        temperatureUpdateCounter = 0
         while(1):
             time.sleep(10)
             _GDATA.process()
+            temperatureUpdateCounter = temperatureUpdateCounter +1
+            if (temperatureUpdateCounter > 6):
+                temperatureUpdateCounter = 0
+                online_update_temperature()
         logger.debug ("Exiting " + self.name)
 
 if __name__ == "__main__":
     THREAD_PINWORKER = myThread(1, "PinWorker")
     THREAD_PINWORKER.start()
+    online_update_Bootup()
     app.run(host='0.0.0.0', port=5000, debug=True)
