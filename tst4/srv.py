@@ -5,12 +5,19 @@ import yaml
 import os.path
 from threading import Thread, Lock
 import copy
-import os
+import os,sys
 import logging
 import ptvsd
-import RPi.GPIO as GPIO
-#ptvsd.enable_attach("switcher", address = ('0.0.0.0', 3000))
 
+
+try:
+    # on Raspberry import proper GPIO Module
+    import RPi.GPIO as GPIO
+except:
+    #Fallback for PC Development without proper GPIO's attached
+    import RPi_stub.GPIO as GPIO
+
+#ptvsd.enable_attach("switcher", address = ('0.0.0.0', 3000))
 #Enable the below line of code only if you want the application to wait untill the debugger has attached to it
 #ptvsd.wait_for_attach()
 
@@ -43,7 +50,7 @@ class GLOBAL_DATA():
         self._loadYamlFile()
         self._manualOverrideFlag = False
         self._pinIsActiveStatus = False
-        self._relaisPinNumber = 12  # pin12 = GPIO18
+        self._relaisPinNumber = 12  # pin12 = GPIO-18
         GPIO.setmode(GPIO.BOARD) # Set the board mode to numbers pins by physical location
         GPIO.setup(self._relaisPinNumber, GPIO.OUT) # Set pin mode as output
         GPIO.output(self._relaisPinNumber, GPIO.LOW)
@@ -205,6 +212,17 @@ class GLOBAL_DATA():
             self._yamlData = yaml.safe_load(f)
 
 
+def getTemperature():
+    file = open('/sys/bus/w1/devices/28-0317019e9eff/w1_slave')
+    filecontent = file.read()
+    file.close()
+
+    stringvalue = filecontent.split("\n")[1].split(" ")[9]
+    temperature = float(stringvalue[2:]) / 1000
+    retVal = '%6.2f' % temperature 
+    return(retVal)
+
+
 _GDATA = GLOBAL_DATA()
 
 
@@ -270,7 +288,8 @@ def ROOT():
         'uid1_start' : yamlData["UID1"]["startTime"],
         'uid1_stop'  : yamlData["UID1"]["stopTime"],
         'current_status_active' : current_status_active,
-        'force_override_checked' :force_override_checked
+        'force_override_checked' :force_override_checked,
+        'temperature' : getTemperature()
     }
     return render_template('main_jinja2_template.html', **templateData)
 
