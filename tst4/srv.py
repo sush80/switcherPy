@@ -63,7 +63,7 @@ def online_update_SwitchingOn(newVal):
         logger.error("could not update online data " + str(e))
 def online_update_Bootup():
     try:
-        THINGSPEAK_CHANNEL.update({3:"now"})
+        THINGSPEAK_CHANNEL.update({3:1})
     except Exception as e:
         logger.error("could not update online data " + str(e))
        
@@ -190,7 +190,7 @@ class GLOBAL_DATA():
                 online_update_SwitchingOn(1)
             else:
                 GPIO.output(self._relaisPinNumber, GPIO.LOW)
-                online_update_SwitchingOn(0)
+                online_update_SwitchingOn(-1)
         self._mutex.release()
 
     def yaml_info_get(self, uid):
