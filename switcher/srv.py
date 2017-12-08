@@ -9,6 +9,7 @@ import os,sys
 import logging
 import ptvsd
 import thingspeak
+#https://pypi.python.org/pypi/thingspeak/
 
 
 try:
@@ -35,7 +36,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 # add the handlers to the logger
-logger.addHandler(fh)
+# no file handler for now: logger.addHandler(fh)
 logger.addHandler(ch)
 
 app = Flask(__name__)
@@ -62,8 +63,9 @@ def online_update_SwitchingOn(newVal):
     except Exception as e:
         logger.error("could not update online data " + str(e))
 def online_update_Bootup():
+    temp = getTemperature()
     try:
-        THINGSPEAK_CHANNEL.update({3:1})
+        THINGSPEAK_CHANNEL.update({1:temp, 3:1})
     except Exception as e:
         logger.error("could not update online data " + str(e))
        
@@ -370,7 +372,7 @@ class myThread (Thread):
             time.sleep(10)
             _GDATA.process()
             temperatureUpdateCounter = temperatureUpdateCounter +1
-            if (temperatureUpdateCounter > 6):
+            if (temperatureUpdateCounter > (6*60): #every hour
                 temperatureUpdateCounter = 0
                 online_update_temperature()
         logger.debug ("Exiting " + self.name)
