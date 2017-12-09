@@ -7,10 +7,12 @@ PUD_DOWN = 1
 
 def setmode(a):
    print("PIN:setmode" + str( a))
-def setup(a, b , c = 1):
+def setup(a, b , pull_up_down = 1):
    print("PIN:setup" + str( a)+ str( b))
 def output(a, b):
    print("PIN:output" + str( a)+ str( b))
+def input(a):
+   print("PIN:input" + str( a))
 def cleanup():
    print("PIN:cleanup")
 def setwarnings(flag):
