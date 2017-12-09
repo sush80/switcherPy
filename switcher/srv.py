@@ -410,8 +410,8 @@ if __name__ == "__main__":
     THREAD_TEMPERATURE = ThreadTemperature(1, "Temperature")
     THREAD_TEMPERATURE.start()
 
-    online_update_Bootup()
     _GDATA.setTemperature(readTemperature()) # set values
+    online_update_Bootup()# requires valid temperature
     _GDATA.process()
     
     app.run(host='0.0.0.0', port=5000, debug=True)
