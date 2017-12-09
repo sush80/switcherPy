@@ -45,6 +45,7 @@ class stepper:
 
     def move_to_switch1(self, sleepTime = 0.00001, reverse = False):
         try:
+            GPIO.output(self._PINNUM_ENABLE, self._PIN_ENABLE_ON)
             pinDebounceMax = 1000
             if reverse:
                 GPIO.output(self._PINNUM_DIRECTION, GPIO.HIGH)
