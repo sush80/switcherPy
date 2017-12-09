@@ -45,31 +45,6 @@ class UserInputException(Exception):
     pass
 
 
-with open("DO_NOT_ADD_TO_GIT_THINGSPEAK_CHANNEL_WRITE_KEY.txt", "r") as myfile:
-    THINGSPEAK_CHANNEL_write_key=myfile.readlines()
-    print(THINGSPEAK_CHANNEL_write_key)
-
-THINGSPEAK_CHANNEL = thingspeak.Channel(id=380347,write_key=THINGSPEAK_CHANNEL_write_key)
-
-def online_update_temperature():
-    temp = getTemperature()
-    try:
-        THINGSPEAK_CHANNEL.update({1:temp})
-    except Exception as e:
-        logger.error("could not update online data " + str(e))
-def online_update_SwitchingOn(newVal):
-    try:
-        THINGSPEAK_CHANNEL.update({2:newVal})
-    except Exception as e:
-        logger.error("could not update online data " + str(e))
-def online_update_Bootup():
-    temp = getTemperature()
-    try:
-        THINGSPEAK_CHANNEL.update({1:temp, 3:1})
-    except Exception as e:
-        logger.error("could not update online data " + str(e))
-       
-
 
 
 class GLOBAL_DATA():
@@ -79,6 +54,7 @@ class GLOBAL_DATA():
         self._manualOverrideFlag = False
         self._pinIsActiveStatus = False
         self._relaisPinNumber = 12  # pin12 = GPIO-18
+        self._temperature = 0
         GPIO.setmode(GPIO.BOARD) # Set the board mode to numbers pins by physical location
         GPIO.setup(self._relaisPinNumber, GPIO.OUT) # Set pin mode as output
         GPIO.output(self._relaisPinNumber, GPIO.LOW)
@@ -104,6 +80,17 @@ class GLOBAL_DATA():
         val = copy.copy(self._pinIsActiveStatus)
         self._mutex.release()
         return val
+
+    def setTemperature(self, newVal):
+        self._mutex.acquire()
+        self._temperature = newVal
+        self._mutex.release()
+
+    def getTemperature(self):
+        self._mutex.acquire()
+        _temperature = copy.copy(self._temperature)
+        self._mutex.release()
+        return _temperature
 
     def yaml_data_get(self):
         self._mutex.acquire()
@@ -242,7 +229,10 @@ class GLOBAL_DATA():
             self._yamlData = yaml.safe_load(f)
 
 
-def getTemperature():
+_GDATA = GLOBAL_DATA()
+
+
+def readTemperature():
     try:
         file = open('/sys/bus/w1/devices/28-0317019e9eff/w1_slave')
         filecontent = file.read()
@@ -259,7 +249,31 @@ def getTemperature():
 
 
 
-_GDATA = GLOBAL_DATA()
+
+with open("DO_NOT_ADD_TO_GIT_THINGSPEAK_CHANNEL_WRITE_KEY.txt", "r") as myfile:
+    THINGSPEAK_CHANNEL_write_key=myfile.readlines()
+    print(THINGSPEAK_CHANNEL_write_key)
+
+THINGSPEAK_CHANNEL = thingspeak.Channel(id=380347,write_key=THINGSPEAK_CHANNEL_write_key)
+
+def online_update_temperature():
+    temp = _GDATA.getTemperature()
+    try:
+        THINGSPEAK_CHANNEL.update({1:temp})
+    except Exception as e:
+        logger.error("could not update online data " + str(e))
+def online_update_SwitchingOn(newVal):
+    try:
+        THINGSPEAK_CHANNEL.update({2:newVal})
+    except Exception as e:
+        logger.error("could not update online data " + str(e))
+def online_update_Bootup():
+    temp = _GDATA.getTemperature()
+    try:
+        THINGSPEAK_CHANNEL.update({1:temp, 3:1})
+    except Exception as e:
+        logger.error("could not update online data " + str(e))
+       
 
 
 @app.route("/index.html", methods=['GET', 'POST'])
@@ -325,7 +339,7 @@ def ROOT():
         'uid1_stop'  : yamlData["UID1"]["stopTime"],
         'current_status_active' : current_status_active,
         'force_override_checked' :force_override_checked,
-        'temperature' : getTemperature()
+        'temperature' : str(_GDATA.getTemperature())
     }
     return render_template('main_jinja2_template.html', **templateData)
 
@@ -356,7 +370,7 @@ def doReset():
     os.system("sudo reboot")
 
 
-class myThread (Thread):
+class ThreadPinWorker (Thread):
     def __init__(self, threadID, name):
         Thread.__init__(self)
         self.threadID = threadID
@@ -367,18 +381,37 @@ class myThread (Thread):
     def run(self):
         global _GDATA
         logger.debug ("Starting " + self.name)
-        temperatureUpdateCounter = 0
         while(1):
             time.sleep(10)
             _GDATA.process()
-            temperatureUpdateCounter = temperatureUpdateCounter +1
-            if (temperatureUpdateCounter > (6*60): #every hour
-                temperatureUpdateCounter = 0
-                online_update_temperature()
+        logger.debug ("Exiting " + self.name)
+
+
+class ThreadTemperature (Thread):
+    def __init__(self, threadID, name):
+        Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name    
+
+    def run(self):
+        global _GDATA
+        logger.debug ("Starting " + self.name)
+        while(1):
+            temperature = readTemperature()
+            _GDATA.setTemperature(temperature)
+            online_update_temperature()
+            time.sleep(60*60)
         logger.debug ("Exiting " + self.name)
 
 if __name__ == "__main__":
-    THREAD_PINWORKER = myThread(1, "PinWorker")
+    #start threads
+    THREAD_PINWORKER = ThreadPinWorker(1, "PinWorker")
     THREAD_PINWORKER.start()
+    THREAD_TEMPERATURE = ThreadTemperature(1, "Temperature")
+    THREAD_TEMPERATURE.start()
+
     online_update_Bootup()
+    _GDATA.setTemperature(readTemperature()) # set values
+    _GDATA.process()
+    
     app.run(host='0.0.0.0', port=5000, debug=True)
