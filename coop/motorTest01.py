@@ -46,7 +46,7 @@ class stepper:
     def move_to_switch1(self, sleepTime = 0.00001, reverse = False):
         try:
             GPIO.output(self._PINNUM_ENABLE, self._PIN_ENABLE_ON)
-            pinDebounceMax = 1000
+            startDebouncingTime = None
             if reverse:
                 GPIO.output(self._PINNUM_DIRECTION, GPIO.HIGH)
             else:
@@ -58,11 +58,14 @@ class stepper:
                 GPIO.output(self._PINNUM_PULSE, GPIO.HIGH)
                 time.sleep(sleepTime)
                 if self._INPUT_ACTIVATED == GPIO.input(self._PINNUM_SWITCH1):
-                    pinDebounceCount = pinDebounceCount +1
+                    if (startDebouncingTime == None):
+                        startDebouncingTime = time.time()
                 else:
-                    pinDebounceCount = 0
-                if (pinDebounceCount > pinDebounceMax):
-                    return
+                    if (startDebouncingTime != None):
+                        startDebouncingTime = None
+                if (startDebouncingTime != None):
+                    if (time.time() - startDebouncingTime) > .200:
+                        return
         finally:
             GPIO.output(self._PINNUM_ENABLE, self._PIN_ENABLE_OFF)
 
@@ -76,5 +79,8 @@ class stepper:
 if __name__ == "__main__":
     myStepper = stepper()
     myStepper.move_to_switch1()
+    time.sleep(5)
+    myStepper.move_to_switch1(reverse = True)
+    
 
 
