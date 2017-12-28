@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, render_template, request
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import yaml
 import os.path
@@ -36,7 +36,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 # add the handlers to the logger
-# no file handler for now: logger.addHandler(fh)
+logger.addHandler(fh) # FileHandler 
 logger.addHandler(ch)
 
 app = Flask(__name__)
@@ -45,6 +45,8 @@ class UserInputException(Exception):
     pass
 
 
+GPIO_RELAIS_ON = GPIO.HIGH
+GPIO_RELAIS_OFF = GPIO.LOW
 
 
 class GLOBAL_DATA():
@@ -57,7 +59,7 @@ class GLOBAL_DATA():
         self._temperature = 0
         GPIO.setmode(GPIO.BOARD) # Set the board mode to numbers pins by physical location
         GPIO.setup(self._relaisPinNumber, GPIO.OUT) # Set pin mode as output
-        GPIO.output(self._relaisPinNumber, GPIO.LOW)
+        GPIO.output(self._relaisPinNumber, GPIO_RELAIS_OFF)
 
     def isManualOverrideFlagSet(self):
         self._mutex.acquire()
@@ -65,15 +67,18 @@ class GLOBAL_DATA():
         self._mutex.release()
         return val
 
-    def setOverrideFlag(self, newValue):
+    def setOverrideFlag(self, newVal):
+        assert(isinstance(newVal, bool))
         self._mutex.acquire()
-        self._manualOverrideFlag = newValue
+        self._manualOverrideFlag = newVal
         self._mutex.release()
 
     def setPinIsActiveStatus(self, newVal):
+        assert(isinstance(newVal, bool))
         self._mutex.acquire()
         self._pinIsActiveStatus = newVal
         self._mutex.release()
+
 
     def getPinIsActiveStatus(self):
         self._mutex.acquire()
@@ -137,7 +142,7 @@ class GLOBAL_DATA():
 
         finally:
             self._mutex.release()
-        return 
+        return  ""
 
 
     def yaml_isActive(self, uid):
@@ -164,23 +169,31 @@ class GLOBAL_DATA():
 
     def process(self):
         self._mutex.acquire()
-        pinActiveNew = False
-        for uid in range(2):
-            if self._processUid(uid):
+        try:
+            pinActiveNew = False
+            for uid in range(2):
+                if self._processUid(uid):
+                    pinActiveNew = True
+            if self._manualOverrideFlag:
+                logger.debug ("Override Flag set, will switch")
                 pinActiveNew = True
-        if self._manualOverrideFlag:
-            logger.debug ("Override Flag set, will switch")
-            pinActiveNew = True
-        if self._pinIsActiveStatus != pinActiveNew:
-            self._pinIsActiveStatus = pinActiveNew
-            logger.debug ("switching pin to new: " + str(self._pinIsActiveStatus))
-            if self._pinIsActiveStatus:
-                GPIO.output(self._relaisPinNumber, GPIO.HIGH)
-                online_update_SwitchingOn(1)
-            else:
-                GPIO.output(self._relaisPinNumber, GPIO.LOW)
-                online_update_SwitchingOn(-1)
-        self._mutex.release()
+            if self._pinIsActiveStatus != pinActiveNew:
+                self._pinIsActiveStatus = pinActiveNew
+                logger.debug ("switching pin to new: " + str(self._pinIsActiveStatus))
+                if self._pinIsActiveStatus:
+                    GPIO.output(self._relaisPinNumber, GPIO_RELAIS_ON)
+                    online_update_SwitchingOn(1)
+                else:
+                    GPIO.output(self._relaisPinNumber, GPIO_RELAIS_OFF)
+                    online_update_SwitchingOn(-1)
+        except:
+            try:
+                logger.error ("process::Errorhandler turning off ...")
+                GPIO.output(self._relaisPinNumber, GPIO_RELAIS_OFF)
+            except:
+                logger.error ("process::Errorhandler turning off failed")
+        finally:
+            self._mutex.release()
 
     def yaml_info_get(self, uid):
         self._mutex.acquire()
@@ -248,6 +261,15 @@ def readTemperature():
 
 
 
+def getSystemUptime():
+    try:
+        with open('/proc/uptime', 'r') as f:
+            uptime_seconds = float(f.readline().split()[0])
+            uptime_string = str(timedelta(seconds = uptime_seconds))
+            return uptime_string
+    except:
+        return "<no uptime>"
+
 
 
 with open("DO_NOT_ADD_TO_GIT_THINGSPEAK_CHANNEL_WRITE_KEY.txt", "r") as myfile:
@@ -286,9 +308,11 @@ def index_html():
 
 @app.route("/", methods=['GET', 'POST'])
 def ROOT():
-    current_status_active = "off"
+    current_status_active = "<empty>"
     errorString = ""
     force_override_checked = ""
+    upTimeString = ""
+    temperature = ""
     try:
         global _GDATA
         logger.debug("root html")
@@ -317,31 +341,47 @@ def ROOT():
 
         if _GDATA.getPinIsActiveStatus():
             current_status_active = "on"
+        else:
+            current_status_active = "off"
         
         if _GDATA.isManualOverrideFlagSet():
             force_override_checked = "checked"
+
+        upTimeString = getSystemUptime()
+        temperature = str(_GDATA.getTemperature())
+
     except UserInputException as e:
         logger.error("Caugth UserInputException " + str(e))
-        errorString = str(e)
+        errorString = "UIE:" + str(e)
     except Exception as e:
         logger.error("Caugth Exception " + str(e))
-        errorString = str(e)
-        
-    templateData = {
-        'error_text' : errorString,
-        'title' : 'Switcher!',
-        'time': timeString,
-        'uid0_active': yamlData["UID0"]["active"],
-        'uid0_start' : yamlData["UID0"]["startTime"],
-        'uid0_stop'  : yamlData["UID0"]["stopTime"],
-        'uid1_active': yamlData["UID1"]["active"],
-        'uid1_start' : yamlData["UID1"]["startTime"],
-        'uid1_stop'  : yamlData["UID1"]["stopTime"],
-        'current_status_active' : current_status_active,
-        'force_override_checked' :force_override_checked,
-        'temperature' : str(_GDATA.getTemperature())
-    }
-    return render_template('main_jinja2_template.html', **templateData)
+        errorString = "E:" + str(e)
+    try:
+        templateData = {
+            'error_text' : errorString,
+            'title' : 'Switcher!',
+            'time': timeString,
+            'uid0_active': yamlData["UID0"]["active"],
+            'uid0_start' : yamlData["UID0"]["startTime"],
+            'uid0_stop'  : yamlData["UID0"]["stopTime"],
+            'uid1_active': yamlData["UID1"]["active"],
+            'uid1_start' : yamlData["UID1"]["startTime"],
+            'uid1_stop'  : yamlData["UID1"]["stopTime"],
+            'current_status_active' : current_status_active,
+            'force_override_checked' :force_override_checked,
+            'temperature' : temperature,
+            'upTime' : upTimeString
+        }
+        return render_template('main_jinja2_template.html', **templateData)
+    except Exception as e:
+        logger.error("could not render index.html: " + str(e))
+        try:
+            templateData = {
+                    'tbd' : ""
+                }
+            return render_template('error.html', **templateData)
+        except:
+            logger.error("could not render error.html")
 
 
 @app.route("/timepicker.html", methods=['GET'])
