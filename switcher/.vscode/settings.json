@@ -1,3 +1,11 @@
 {
-    "python.pythonPath": "/Users/sush/anaconda3/envs/py34/bin/python"
+    "python.pythonPath": "/Users/sush/anaconda3/envs/py34/bin/python",
+    "python.unitTest.unittestArgs": [
+        "-v",
+        "-s",
+        ".",
+        "-p",
+        "test_*.py"
+    ],
+    "python.unitTest.unittestEnabled": true
 }

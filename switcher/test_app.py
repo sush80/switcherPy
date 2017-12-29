@@ -34,11 +34,15 @@ class FlaskrTestCase(unittest.TestCase):
             stop=""
             ))
 
-    def _setTimer(self, uid, startTime, stopTime):
+    def _setTimer(self, uid, startTime, stopTime, active = True):
+        if active:
+            activeString = "true"
+        else:
+            activeString = "false"
         return self.app.post('/index.html', data=dict(
             action="setAlarmTimes",
             UID=str(uid),
-            active="true",
+            active=activeString,
             start=startTime,
             stop=stopTime
             ))
@@ -50,23 +54,27 @@ class FlaskrTestCase(unittest.TestCase):
         assert b'UID1_active false' in rv.data
         assert b'CurrentStatus off' in rv.data
 
-    def _assert_timer(self, uid_start_stop, asciihtml):
+    def _assert_timer(self, uid_start_stop, asciihtml, active = True):
         uid = uid_start_stop[0]
         startTime = uid_start_stop[1]
         stopTime = uid_start_stop[2]
-        assert 'UID' + str(uid) + '_active true' in asciihtml
+        if active:
+            activeString = "true"
+        else:
+            activeString = "false"
+        assert 'UID' + str(uid) + '_active ' + activeString in asciihtml
         assert 'UID' + str(uid) + '_start ' + startTime in asciihtml
         assert 'UID' + str(uid) + '_stop ' + stopTime in asciihtml
 
-    def _set_timer(self,uid,startTime, stopTime):
+    def _set_timer(self,uid,startTime, stopTime, active = True):
         print("_set_and_verify_timer " + str(uid) + " " + startTime + " " + stopTime)
-        rv = self._setTimer(uid,startTime, stopTime)
+        rv = self._setTimer(uid,startTime, stopTime, active)
         rvascii = rv.data.decode("ascii")
         return rvascii
 
-    def _set_and_assert_timer(self,uid,startTime, stopTime):
-        asciihtml = self._set_timer(uid,startTime,stopTime)
-        self._assert_timer((uid,startTime,stopTime),asciihtml)
+    def _set_and_assert_timer(self,uid,startTime, stopTime, active = True):
+        asciihtml = self._set_timer(uid,startTime,stopTime, active)
+        self._assert_timer((uid,startTime,stopTime),asciihtml, active)
         return asciihtml
 
     def _set_and_assert_timers(self,uid0_start_stop, uid1_start_stop):
@@ -79,7 +87,7 @@ class FlaskrTestCase(unittest.TestCase):
 
         
     def test_single_sets_01(self):
-        with freeze_time("2017-01-01 00:01"):
+        with freeze_time("2017-01-02 00:01"):
             testItems = ((0,"00:30", "01:00"),
                          (0,"22:31", "23:01"),
                          (1,"00:31", "01:01"),
@@ -89,7 +97,7 @@ class FlaskrTestCase(unittest.TestCase):
                 self._set_and_assert_timer(item[0],item[1], item[2])
         
     def test_both_sets_01(self):
-        with freeze_time("2017-01-01 00:01"):
+        with freeze_time("2017-01-02 00:01"):
             self._set_and_assert_timers((0,"00:30", "01:00"), (1,"22:31", "23:01"))
             self._set_and_assert_timers((0,"00:59", "01:00"), (1,"23:00", "23:01"))
             self._set_and_assert_timers((0,"22:30", "23:00"), (1,"00:31", "01:01"))
@@ -102,29 +110,65 @@ class FlaskrTestCase(unittest.TestCase):
         assert 'CurrentStatus off' in self._refresh_root()
 
     def test_timer_and_active_status_01(self):
-        with freeze_time("2017-01-01 00:01"):
+        with freeze_time("2017-01-01 23:59"):
             asciihtml = self._set_and_assert_timers((0,"00:30", "00:35"), (1,"23:31", "23:41"))
             self._assert_current_status_off()
-        with freeze_time("2017-01-01 00:30"):
+        with freeze_time("2017-01-02 00:00"):
+            self._assert_current_status_off()
+        with freeze_time("2017-01-02 00:01"):
+            self._assert_current_status_off()
+        with freeze_time("2017-01-02 00:30"):
             self._assert_current_status_on()
-        with freeze_time("2017-01-01 00:31"):
+        with freeze_time("2017-01-02 00:31"):
             self._assert_current_status_on()
-        with freeze_time("2017-01-01 00:35"):
+        with freeze_time("2017-01-02 00:35"):
             self._assert_current_status_on()
-        with freeze_time("2017-01-01 00:36"):
+        with freeze_time("2017-01-02 00:36"):
             self._assert_current_status_off()
         for h in range(1,22):
             for m in range(0,60,15):
-                with freeze_time("2017-01-01 " + str(h) + ":" + str(m)):
+                with freeze_time("2017-01-02 " + str(h) + ":" + str(m)):
                     #print (str(h) + " " + str(m))
                     self._assert_current_status_off()
-        with freeze_time("2017-01-01 23:30"):
+        with freeze_time("2017-01-02 23:30"):
             self._assert_current_status_off()
-        with freeze_time("2017-01-01 23:31"):
+        with freeze_time("2017-01-02 23:31"):
             self._assert_current_status_on()
-        with freeze_time("2017-01-01 23:41"):
+        with freeze_time("2017-01-02 23:41"):
             self._assert_current_status_on()
-        with freeze_time("2017-01-01 23:42"):
+        with freeze_time("2017-01-02 23:42"):
+            self._assert_current_status_off()
+
+        
+    def test_timer_and_active_status_02(self):
+        with freeze_time("2017-01-01 23:59"):
+            asciihtml = self._set_and_assert_timer(0,"00:30", "00:35", False)   #def _set_and_assert_timer(self,uid,startTime, stopTime, active = True):
+            asciihtml = self._set_and_assert_timer(1,"00:40", "00:45", False)   #def _set_and_assert_timer(self,uid,startTime, stopTime, active = True):
+            self._assert_current_status_off()
+        with freeze_time("2017-01-02 00:00"):
+            self._assert_current_status_off()
+        with freeze_time("2017-01-02 00:01"):
+            self._assert_current_status_off()
+        with freeze_time("2017-01-02 00:30"):
+            self._assert_current_status_off()
+        with freeze_time("2017-01-02 00:31"):
+            self._assert_current_status_off()
+        with freeze_time("2017-01-02 00:35"):
+            self._assert_current_status_off()
+        with freeze_time("2017-01-02 00:36"):
+            self._assert_current_status_off()
+        for h in range(1,22):
+            for m in range(0,60,15):
+                with freeze_time("2017-01-02 " + str(h) + ":" + str(m)):
+                    #print (str(h) + " " + str(m))
+                    self._assert_current_status_off()
+        with freeze_time("2017-01-02 23:30"):
+            self._assert_current_status_off()
+        with freeze_time("2017-01-02 23:31"):
+            self._assert_current_status_on()
+        with freeze_time("2017-01-02 23:41"):
+            self._assert_current_status_on()
+        with freeze_time("2017-01-02 23:42"):
             self._assert_current_status_off()
 
         

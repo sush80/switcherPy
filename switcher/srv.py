@@ -259,14 +259,23 @@ def readTemperature():
         logger.error("could not read temperature: " + str(e))
         return 0.0
 
-
-
-def getSystemUptime():
+def getSystemUpTime_seconds():
     try:
         with open('/proc/uptime', 'r') as f:
             uptime_seconds = float(f.readline().split()[0])
-            uptime_string = str(timedelta(seconds = uptime_seconds))
-            return uptime_string
+            return uptime_seconds
+    except:
+        return 0
+
+def getSystemUpTime_hours():
+    uptime_seconds = getSystemUpTime_seconds()
+    return uptime_seconds/(60*60)
+
+def getSystemUpTime_string():
+    try:
+        uptime_seconds = getSystemUpTime_seconds
+        uptime_string = str(timedelta(seconds = uptime_seconds))
+        return uptime_string
     except:
         return "<no uptime>"
 
@@ -278,10 +287,11 @@ with open("DO_NOT_ADD_TO_GIT_THINGSPEAK_CHANNEL_WRITE_KEY.txt", "r") as myfile:
 
 THINGSPEAK_CHANNEL = thingspeak.Channel(id=380347,write_key=THINGSPEAK_CHANNEL_write_key)
 
-def online_update_temperature():
+def online_update_temperature_uptime():
     temp = _GDATA.getTemperature()
+    uptime_hours = getSystemUpTime_hours()
     try:
-        THINGSPEAK_CHANNEL.update({1:temp})
+        THINGSPEAK_CHANNEL.update({1:temp,4:uptime_hours})
     except Exception as e:
         logger.error("could not update online data " + str(e))
 def online_update_SwitchingOn(newVal):
@@ -427,7 +437,7 @@ class ThreadPinWorker (Thread):
         logger.debug ("Exiting " + self.name)
 
 
-class ThreadTemperature (Thread):
+class Thread_Temperature_Uptime (Thread):
     def __init__(self, threadID, name):
         Thread.__init__(self)
         self.threadID = threadID
@@ -439,7 +449,7 @@ class ThreadTemperature (Thread):
         while(1):
             temperature = readTemperature()
             _GDATA.setTemperature(temperature)
-            online_update_temperature()
+            online_update_temperature_uptime()
             time.sleep(60*60)
         logger.debug ("Exiting " + self.name)
 
@@ -447,8 +457,8 @@ if __name__ == "__main__":
     #start threads
     THREAD_PINWORKER = ThreadPinWorker(1, "PinWorker")
     THREAD_PINWORKER.start()
-    THREAD_TEMPERATURE = ThreadTemperature(1, "Temperature")
-    THREAD_TEMPERATURE.start()
+    THREAD_TEMPERATURE_UPTIME = Thread_Temperature_Uptime(1, "Thread_Temperature_Uptime")
+    THREAD_TEMPERATURE_UPTIME.start()
 
     _GDATA.setTemperature(readTemperature()) # set values
     online_update_Bootup()# requires valid temperature
