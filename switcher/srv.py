@@ -292,6 +292,7 @@ def online_update_temperature_uptime():
     uptime_hours = getSystemUpTime_hours()
     try:
         THINGSPEAK_CHANNEL.update({1:temp,4:uptime_hours})
+        logger.debug("uptime report: " + str(uptime_hours))
     except Exception as e:
         logger.error("could not update online data " + str(e))
 def online_update_SwitchingOn(newVal):
