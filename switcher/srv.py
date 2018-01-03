@@ -56,10 +56,13 @@ class GLOBAL_DATA():
         self._manualOverrideFlag = False
         self._pinIsActiveStatus = False
         self._relaisPinNumber = 12  # pin12 = GPIO-18
+        self._ledPinNumber = 16  # pin12 = GPIO-23
         self._temperature = 0
         GPIO.setmode(GPIO.BOARD) # Set the board mode to numbers pins by physical location
         GPIO.setup(self._relaisPinNumber, GPIO.OUT) # Set pin mode as output
         GPIO.output(self._relaisPinNumber, GPIO_RELAIS_OFF)
+        GPIO.setup(self._ledPinNumber, GPIO.OUT) # Set pin mode as output
+        GPIO.output(self._ledPinNumber, GPIO.HIGH)
 
     def isManualOverrideFlagSet(self):
         self._mutex.acquire()
@@ -358,7 +361,7 @@ def ROOT():
         if _GDATA.isManualOverrideFlagSet():
             force_override_checked = "checked"
 
-        upTimeString = getSystemUptime()
+        upTimeString = getSystemUpTime_string()
         temperature = str(_GDATA.getTemperature())
 
     except UserInputException as e:
@@ -432,9 +435,17 @@ class ThreadPinWorker (Thread):
     def run(self):
         global _GDATA
         logger.debug ("Starting " + self.name)
+        ledOn = True
         while(1):
             time.sleep(10)
             _GDATA.process()
+            if ledOn:
+                GPIO.output(_GDATA._relaisPinNumber, GPIO_RELAIS_OFF)
+                ledOn = False
+            else:
+                GPIO.output(_GDATA._relaisPinNumber, GPIO_RELAIS_ON)
+                ledOn = True
+
         logger.debug ("Exiting " + self.name)
 
 
