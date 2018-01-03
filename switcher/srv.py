@@ -440,10 +440,10 @@ class ThreadPinWorker (Thread):
             time.sleep(10)
             _GDATA.process()
             if ledOn:
-                GPIO.output(_GDATA._relaisPinNumber, GPIO_RELAIS_OFF)
+                GPIO.output(_GDATA._ledPinNumber, GPIO_RELAIS_OFF)
                 ledOn = False
             else:
-                GPIO.output(_GDATA._relaisPinNumber, GPIO_RELAIS_ON)
+                GPIO.output(_GDATA._ledPinNumber, GPIO_RELAIS_ON)
                 ledOn = True
 
         logger.debug ("Exiting " + self.name)
