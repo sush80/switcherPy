@@ -56,7 +56,7 @@ class GLOBAL_DATA():
         self._manualOverrideFlag = False
         self._pinIsActiveStatus = False
         self._relaisPinNumber = 12  # pin12 = GPIO-18
-        self._ledPinNumber = 16  # pin12 = GPIO-23
+        self._ledPinNumber = 16  # pin16 = GPIO-23
         self._temperature = 0
         GPIO.setmode(GPIO.BOARD) # Set the board mode to numbers pins by physical location
         GPIO.setup(self._relaisPinNumber, GPIO.OUT) # Set pin mode as output
