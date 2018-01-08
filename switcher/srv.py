@@ -166,7 +166,12 @@ class GLOBAL_DATA():
 
         [timerIsActive, startTime, stopTime] = self._yaml_info_get(uid)
         if timerIsActive and (tim >= startTime) and (tim <= stopTime):
-            logger.debug ("Timer " + str(uid) + " is active")
+            timestring =  now.strftime("%Y-%m-%d %H:%M")
+            logger.debug ("Timer " + str(uid) + " is active - " + 
+                          timestring +  
+                          " - " + str(timerIsActive) + 
+                          " - " + str(startTime) + 
+                          " - " + str(stopTime))
             return True
         return False
 
@@ -201,7 +206,9 @@ class GLOBAL_DATA():
     def yaml_info_get(self, uid):
         self._mutex.acquire()
         try:
-            return self._yaml_info_get(uid)
+            data = self._yaml_info_get(uid)
+            ret = copy.copy(data)
+            return ret
         finally:
             self._mutex.release()
 
