@@ -165,7 +165,7 @@ class GLOBAL_DATA():
         tim = now.time()
 
         [timerIsActive, startTime, stopTime] = self._yaml_info_get(uid)
-        if timerIsActive and (tim >= startTime) and (tim <= stopTime):
+        if (timerIsActive == True) and (tim >= startTime) and (tim <= stopTime):
             timestring =  now.strftime("%Y-%m-%d %H:%M")
             logger.debug ("Timer " + str(uid) + " is active - " + 
                           timestring +  
