@@ -169,6 +169,7 @@ class GLOBAL_DATA():
             timestring =  now.strftime("%Y-%m-%d %H:%M")
             logger.debug ("Timer " + str(uid) + " is active - " + 
                           timestring +  
+                          " - " + str(tim) + 
                           " - " + str(timerIsActive) + 
                           " - " + str(startTime) + 
                           " - " + str(stopTime))
