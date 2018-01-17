@@ -214,12 +214,16 @@ class GLOBAL_DATA():
             self._mutex.release()
 
     def _yaml_info_get(self, uid):
-        uidStr = "UID" + str(uid)
-        active = self._yamlData[uidStr]["active"] == "true"
+        active = False
+        startTime = ""
+        stopTime = ""
         try:
+            uidStr = "UID" + str(uid)
+            active = self._yamlData[uidStr]["active"] == "true"
             startTime = self._convertToTime(self._yamlData[uidStr]["startTime"])
             stopTime = self._convertToTime(self._yamlData[uidStr]["stopTime"])
         except:
+            active = False
             startTime = ""
             stopTime = ""
         return [active, startTime, stopTime]
