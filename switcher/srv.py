@@ -221,8 +221,9 @@ class GLOBAL_DATA():
             uidStr = "UID" + str(uid)
             active = self._yamlData[uidStr]["active"] == "true"
             startTime = self._convertToTime(self._yamlData[uidStr]["startTime"])
-            stopTime = self._convertToTime(self._yamlData[uidStr]["stopTime"])
-        except:
+            stopTime = self._convertToTime(self._yamlData[uidStr]["stopTime"])     
+        except Exception as e:
+            logger.error("_yaml_info_get: " + str(e))
             active = False
             startTime = ""
             stopTime = ""
