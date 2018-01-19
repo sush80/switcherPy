@@ -52,6 +52,7 @@ GPIO_RELAIS_OFF = GPIO.LOW
 class GLOBAL_DATA():
     def __init__(self):
         self._mutex = Lock()
+        logger.info("GLOBAL_DATA init " + hex(id(self)))
         self._loadYamlFile()
         self._manualOverrideFlag = False
         self._pinIsActiveStatus = False
@@ -118,6 +119,7 @@ class GLOBAL_DATA():
 
     def updateConfigFile(self, uid, active="false", start="", end=""):
         self._mutex.acquire()
+        logger.info("GLOBAL_DATA updateConfigFile " + hex(id(self)))
         try:
             #with open(g_etYamlFileName(), 'w') as outfile:
             #    yaml.dump(data, outfile, default_flow_style=False)
@@ -166,6 +168,7 @@ class GLOBAL_DATA():
 
         [timerIsActive, startTime, stopTime] = self._yaml_info_get(uid)
         if (timerIsActive == True) and (tim >= startTime) and (tim <= stopTime):
+            logger.info("GLOBAL_DATA _processUid " + hex(id(self)))
             timestring =  now.strftime("%Y-%m-%d %H:%M")
             logger.debug ("Timer " + str(uid) + " is active - " + 
                           timestring +  
