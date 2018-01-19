@@ -3,12 +3,15 @@ import srv
 import unittest
 import tempfile
 from freezegun import freeze_time
+from srv import GLOBAL_DATA
 
 class FlaskrTestCase(unittest.TestCase):
 
     def setUp(self):
+        GDATA = GLOBAL_DATA()
         self.db_fd, srv.app.config['DATABASE'] = tempfile.mkstemp()
         srv.app.testing = True
+        srv.app.config.update(_GDATA = GDATA)
         self.app = srv.app.test_client()
         #with srv.app.app_context():
         #    srv.init_db()
@@ -165,9 +168,9 @@ class FlaskrTestCase(unittest.TestCase):
         with freeze_time("2017-01-02 23:30"):
             self._assert_current_status_off()
         with freeze_time("2017-01-02 23:31"):
-            self._assert_current_status_on()
+            self._assert_current_status_off()
         with freeze_time("2017-01-02 23:41"):
-            self._assert_current_status_on()
+            self._assert_current_status_off()
         with freeze_time("2017-01-02 23:42"):
             self._assert_current_status_off()
 

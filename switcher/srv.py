@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, current_app
 from datetime import datetime, timedelta
 import time
 import yaml
@@ -23,6 +23,18 @@ except:
 #Enable the below line of code only if you want the application to wait untill the debugger has attached to it
 #ptvsd.wait_for_attach()
 
+
+
+
+YAML_FIELD_UID = "UID"
+YAML_FIELD_ACTIVE = "active"
+YAML_FIELD_STARTTIME = "startTime"
+YAML_FIELD_STOPTIME = "stopTime"
+YAML_TRUE = "true"
+YAML_FALSE = "false"
+
+
+
 logger = logging.getLogger('myserver')
 logger.setLevel(logging.DEBUG)
 # create file handler which logs even debug messages
@@ -38,7 +50,6 @@ ch.setFormatter(formatter)
 # add the handlers to the logger
 logger.addHandler(fh) # FileHandler 
 logger.addHandler(ch)
-
 app = Flask(__name__)
 
 class UserInputException(Exception):
@@ -117,13 +128,16 @@ class GLOBAL_DATA():
     def _getYamlFileName(self):
         return 'data.yml'
 
+    def uidStr(self,uid):
+        return "UID" + str(uid)
+
     def updateConfigFile(self, uid, active="false", start="", end=""):
         self._mutex.acquire()
         logger.info("GLOBAL_DATA updateConfigFile " + hex(id(self)))
         try:
             #with open(g_etYamlFileName(), 'w') as outfile:
             #    yaml.dump(data, outfile, default_flow_style=False)
-            if active == "true":
+            if active == YAML_TRUE:
                 try:
                     _start = self._convertToTime(start)
                     #logger.debug("start time is valid")
@@ -134,12 +148,12 @@ class GLOBAL_DATA():
                 except ValueError:
                     raise UserInputException("Error on time conversion")
             else:
-                active = "false"
+                active = YAML_FALSE
 
-            uidStr = "UID" + str(uid)
-            self._yamlData[uidStr]["active"] = active
-            self._yamlData[uidStr]["startTime"] = start
-            self._yamlData[uidStr]["stopTime"] = end
+            uidStr = self.uidStr(uid)
+            self._yamlData[uidStr][YAML_FIELD_ACTIVE] = active
+            self._yamlData[uidStr][YAML_FIELD_STARTTIME] = start
+            self._yamlData[uidStr][YAML_FIELD_STOPTIME] = end
             
             fName = self._getYamlFileName()
             with open(fName, "w") as f:
@@ -153,8 +167,7 @@ class GLOBAL_DATA():
     def yaml_isActive(self, uid):
         self._mutex.acquire()
         try:
-            uidStr = "UID" + str(uid)
-            return self._yamlData[uidStr]["active"] == "true"
+            return self._yamlData[self.uidStr(uid)][YAML_FIELD_ACTIVE] == YAML_TRUE
         finally:
             self._mutex.release()
 
@@ -168,14 +181,14 @@ class GLOBAL_DATA():
 
         [timerIsActive, startTime, stopTime] = self._yaml_info_get(uid)
         if (timerIsActive == True) and (tim >= startTime) and (tim <= stopTime):
-            logger.info("GLOBAL_DATA _processUid " + hex(id(self)))
             timestring =  now.strftime("%Y-%m-%d %H:%M")
             logger.debug ("Timer " + str(uid) + " is active - " + 
                           timestring +  
                           " - " + str(tim) + 
                           " - " + str(timerIsActive) + 
                           " - " + str(startTime) + 
-                          " - " + str(stopTime))
+                          " - " + str(stopTime)  +
+                          " - _processUid " + hex(id(self)))
             return True
         return False
 
@@ -221,10 +234,10 @@ class GLOBAL_DATA():
         startTime = ""
         stopTime = ""
         try:
-            uidStr = "UID" + str(uid)
-            active = self._yamlData[uidStr]["active"] == "true"
-            startTime = self._convertToTime(self._yamlData[uidStr]["startTime"])
-            stopTime = self._convertToTime(self._yamlData[uidStr]["stopTime"])     
+            uidStr = self.uidStr(uid)
+            active = self._yamlData[uidStr][YAML_FIELD_ACTIVE] == YAML_TRUE
+            startTime = self._convertToTime(self._yamlData[uidStr][YAML_FIELD_STARTTIME])
+            stopTime = self._convertToTime(self._yamlData[uidStr][YAML_FIELD_STOPTIME])     
         except Exception as e:
             logger.error("_yaml_info_get: " + str(e))
             active = False
@@ -238,13 +251,13 @@ class GLOBAL_DATA():
         self._yamlData = dict(
                 UID0 = dict(
                     UID = '0',
-                    active = 'false',
+                    active = YAML_FALSE,
                     startTime = '00:00',
                     stopTime = '00:00')
                 ,
                 UID1 = dict(
                     UID = '1',
-                    active = 'false',
+                    active = YAML_FALSE,
                     startTime = '00:00',
                     stopTime = '00:00')
                 )
@@ -261,7 +274,7 @@ class GLOBAL_DATA():
             self._yamlData = yaml.safe_load(f)
 
 
-_GDATA = GLOBAL_DATA()
+
 
 
 def readTemperature():
@@ -307,6 +320,9 @@ with open("DO_NOT_ADD_TO_GIT_THINGSPEAK_CHANNEL_WRITE_KEY.txt", "r") as myfile:
 THINGSPEAK_CHANNEL = thingspeak.Channel(id=380347,write_key=THINGSPEAK_CHANNEL_write_key)
 
 def online_update_temperature_uptime():
+
+    return 
+
     temp = _GDATA.getTemperature()
     uptime_hours = getSystemUpTime_hours()
     try:
@@ -320,6 +336,10 @@ def online_update_SwitchingOn(newVal):
     except Exception as e:
         logger.error("could not update online data " + str(e))
 def online_update_Bootup():
+
+    return 
+
+
     temp = _GDATA.getTemperature()
     try:
         THINGSPEAK_CHANNEL.update({1:temp, 3:1})
@@ -343,8 +363,8 @@ def ROOT():
     force_override_checked = ""
     upTimeString = ""
     temperature = ""
+    _GDATA = current_app._get_current_object().config["_GDATA"]
     try:
-        global _GDATA
         logger.debug("root html")
         now = datetime.now()
         timeString = now.strftime("%Y-%m-%d %H:%M")
@@ -391,12 +411,12 @@ def ROOT():
             'error_text' : errorString,
             'title' : 'Switcher!',
             'time': timeString,
-            'uid0_active': yamlData["UID0"]["active"],
-            'uid0_start' : yamlData["UID0"]["startTime"],
-            'uid0_stop'  : yamlData["UID0"]["stopTime"],
-            'uid1_active': yamlData["UID1"]["active"],
-            'uid1_start' : yamlData["UID1"]["startTime"],
-            'uid1_stop'  : yamlData["UID1"]["stopTime"],
+            'uid0_active': yamlData["UID0"][YAML_FIELD_ACTIVE],
+            'uid0_start' : yamlData["UID0"][YAML_FIELD_STARTTIME],
+            'uid0_stop'  : yamlData["UID0"][YAML_FIELD_STOPTIME],
+            'uid1_active': yamlData["UID1"][YAML_FIELD_ACTIVE],
+            'uid1_start' : yamlData["UID1"][YAML_FIELD_STARTTIME],
+            'uid1_stop'  : yamlData["UID1"][YAML_FIELD_STOPTIME],
             'current_status_active' : current_status_active,
             'force_override_checked' :force_override_checked,
             'temperature' : temperature,
@@ -441,55 +461,58 @@ def doReset():
 
 
 class ThreadPinWorker (Thread):
-    def __init__(self, threadID, name):
+    def __init__(self, threadID, name, gdata):
         Thread.__init__(self)
         self.threadID = threadID
         self.name = name
         self.pinActiveCurrent = False
+        self.gdata = gdata
     
 
     def run(self):
-        global _GDATA
         logger.debug ("Starting " + self.name)
         ledOn = True
         while(1):
             time.sleep(10)
-            _GDATA.process()
+            self.gdata.process()
             if ledOn:
-                GPIO.output(_GDATA._ledPinNumber, GPIO.HIGH)
+                GPIO.output(self.gdata._ledPinNumber, GPIO.HIGH)
                 ledOn = False
             else:
-                GPIO.output(_GDATA._ledPinNumber, GPIO.LOW)
+                GPIO.output(self.gdata._ledPinNumber, GPIO.LOW)
                 ledOn = True
 
         logger.debug ("Exiting " + self.name)
 
 
 class Thread_Temperature_Uptime (Thread):
-    def __init__(self, threadID, name):
+    def __init__(self, threadID, name, gdata):
         Thread.__init__(self)
         self.threadID = threadID
         self.name = name    
+        self.gdata = gdata
 
     def run(self):
-        global _GDATA
         logger.debug ("Starting " + self.name)
         while(1):
             temperature = readTemperature()
-            _GDATA.setTemperature(temperature)
+            self.gdata.setTemperature(temperature)
             online_update_temperature_uptime()
             time.sleep(60*60)
         logger.debug ("Exiting " + self.name)
 
 if __name__ == "__main__":
     #start threads
-    THREAD_PINWORKER = ThreadPinWorker(1, "PinWorker")
+    GDATA = GLOBAL_DATA()
+    app.config.update(_GDATA = GDATA)
+    GDATA.setTemperature(readTemperature()) # set values
+
+    THREAD_PINWORKER = ThreadPinWorker(1, "PinWorker", GDATA)
     THREAD_PINWORKER.start()
-    THREAD_TEMPERATURE_UPTIME = Thread_Temperature_Uptime(1, "Thread_Temperature_Uptime")
+    THREAD_TEMPERATURE_UPTIME = Thread_Temperature_Uptime(1, "Thread_Temperature_Uptime", GDATA)
     THREAD_TEMPERATURE_UPTIME.start()
 
-    _GDATA.setTemperature(readTemperature()) # set values
     online_update_Bootup()# requires valid temperature
-    _GDATA.process()
+    GDATA.process()
     
     app.run(host='0.0.0.0', port=5000, debug=True)
