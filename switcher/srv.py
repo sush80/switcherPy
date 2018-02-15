@@ -319,14 +319,10 @@ with open("DO_NOT_ADD_TO_GIT_THINGSPEAK_CHANNEL_WRITE_KEY.txt", "r") as myfile:
 
 THINGSPEAK_CHANNEL = thingspeak.Channel(id=380347,write_key=THINGSPEAK_CHANNEL_write_key)
 
-def online_update_temperature_uptime():
+def online_update_temperature_uptime(temperature, uptime_hours):
 
-    return 
-
-    temp = _GDATA.getTemperature()
-    uptime_hours = getSystemUpTime_hours()
     try:
-        THINGSPEAK_CHANNEL.update({1:temp,4:uptime_hours})
+        THINGSPEAK_CHANNEL.update({1:temperature,4:uptime_hours})
         #logger.debug("uptime report: " + str(uptime_hours))
     except Exception as e:
         logger.error("could not update online data " + str(e))
@@ -335,14 +331,9 @@ def online_update_SwitchingOn(newVal):
         THINGSPEAK_CHANNEL.update({2:newVal})
     except Exception as e:
         logger.error("could not update online data " + str(e))
-def online_update_Bootup():
-
-    return 
-
-
-    temp = _GDATA.getTemperature()
+def online_update_Bootup(temperature):
     try:
-        THINGSPEAK_CHANNEL.update({1:temp, 3:1})
+        THINGSPEAK_CHANNEL.update({1:temperature, 3:1})
     except Exception as e:
         logger.error("could not update online data " + str(e))
        
@@ -497,7 +488,8 @@ class Thread_Temperature_Uptime (Thread):
         while(1):
             temperature = readTemperature()
             self.gdata.setTemperature(temperature)
-            online_update_temperature_uptime()
+            uptime_hours = getSystemUpTime_hours()
+            online_update_temperature_uptime(temperature, uptime_hours)
             time.sleep(60*60)
         logger.debug ("Exiting " + self.name)
 
@@ -512,7 +504,7 @@ if __name__ == "__main__":
     THREAD_TEMPERATURE_UPTIME = Thread_Temperature_Uptime(1, "Thread_Temperature_Uptime", GDATA)
     THREAD_TEMPERATURE_UPTIME.start()
 
-    online_update_Bootup()# requires valid temperature
+    online_update_Bootup(readTemperature())# requires valid temperature
     GDATA.process()
     
     app.run(host='0.0.0.0', port=5000, debug=True)
