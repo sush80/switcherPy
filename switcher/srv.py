@@ -502,9 +502,11 @@ if __name__ == "__main__":
         logger.warning("local clock not up to date, postponing start of server:" + str(now))
         time.sleep(10)
 
+    logger.info("starting up...")
     GDATA = GLOBAL_DATA()
     app.config.update(_GDATA = GDATA)
     GDATA.setTemperature(readTemperature()) # set values
+    logger.info("Data intialized -> starting threads.")
 
     THREAD_PINWORKER = ThreadPinWorker(1, "PinWorker", GDATA)
     THREAD_PINWORKER.start()
@@ -513,5 +515,6 @@ if __name__ == "__main__":
 
     online_update_Bootup(readTemperature())# requires valid temperature
     GDATA.process()
+    logger.info("Will start flask now")
     
     app.run(host='0.0.0.0', port=5000, debug=True)

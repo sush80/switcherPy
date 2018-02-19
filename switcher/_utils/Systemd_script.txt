@@ -1,5 +1,4 @@
 [Unit]
-Description=My service2
 After=network.target
 
 [Service]
@@ -7,7 +6,7 @@ ExecStart=/home/pi/miniconda3/bin/python srv.py
 WorkingDirectory=/home/pi/Documents/switcherPy/switcher
 StandardOutput=inherit
 StandardError=inherit
-Restart=always
+Restart=no
 User=pi
 
 [Install]
