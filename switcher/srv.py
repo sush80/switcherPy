@@ -495,6 +495,12 @@ class Thread_Temperature_Uptime (Thread):
 
 if __name__ == "__main__":
     #start threads
+    while(True):
+        now = datetime.now()
+        if now.year < 2017:
+            logger.warning("local clock not up to date, postponing start of server:" + str(now))
+            time.sleep(10)
+
     GDATA = GLOBAL_DATA()
     app.config.update(_GDATA = GDATA)
     GDATA.setTemperature(readTemperature()) # set values
