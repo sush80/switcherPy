@@ -323,18 +323,21 @@ def online_update_temperature_uptime(temperature, uptime_hours):
 
     try:
         THINGSPEAK_CHANNEL.update({1:temperature,4:uptime_hours})
-        #logger.debug("uptime report: " + str(uptime_hours))
+        logger.debug("uptime report: " + str(uptime_hours))
     except Exception as e:
+        pass
         logger.error("could not update online data " + str(e))
 def online_update_SwitchingOn(newVal):
     try:
         THINGSPEAK_CHANNEL.update({2:newVal})
     except Exception as e:
+        pass
         logger.error("could not update online data " + str(e))
 def online_update_Bootup(temperature):
     try:
         THINGSPEAK_CHANNEL.update({1:temperature, 3:1})
     except Exception as e:
+        pass
         logger.error("could not update online data " + str(e))
        
 
@@ -504,6 +507,8 @@ if __name__ == "__main__":
 
     logger.info("starting up...")
     GDATA = GLOBAL_DATA()
+    
+    # that is the ONLY ! Place where the flask app can access global data !
     app.config.update(_GDATA = GDATA)
     GDATA.setTemperature(readTemperature()) # set values
     logger.info("Data intialized -> starting threads.")
@@ -517,4 +522,6 @@ if __name__ == "__main__":
     GDATA.process()
     logger.info("Will start flask now")
     
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    #use_reloader = False is to prevent this file to be started multiple times, resulting in multiple threads
+    #                     and duplicated data structurs
+    app.run(host='0.0.0.0', port=5000, debug=True,use_reloader=False)
