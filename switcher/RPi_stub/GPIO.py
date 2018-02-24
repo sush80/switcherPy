@@ -5,12 +5,16 @@ LOW = 0
 HIGH = 1
 
 def setmode(a):
-   print("PIN:setmode" + str( a))
+    pass
+    #print("PIN:setmode" + str( a))
 def setup(a, b):
-   print("PIN:setup" + str( a)+ str( b))
+    pass
+    #print("PIN:setup" + str( a)+ str( b))
 def output(a, b):
-   print("PIN:output" + str( a)+ str( b))
+    pass
+    #print("PIN:output" + str( a)+ str( b))
 def cleanup():
-   print("PIN:cleanup")
+    pass
+    #print("PIN:cleanup")
 def setwarnings(flag):
-   print("PIN:setwarnings" + str( flag))
+    print("PIN:setwarnings" + str( flag))

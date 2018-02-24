@@ -317,25 +317,25 @@ with open("DO_NOT_ADD_TO_GIT_THINGSPEAK_CHANNEL_WRITE_KEY.txt", "r") as myfile:
     THINGSPEAK_CHANNEL_write_key=myfile.readlines()
     print(THINGSPEAK_CHANNEL_write_key)
 
-THINGSPEAK_CHANNEL = thingspeak.Channel(id=380347,write_key=THINGSPEAK_CHANNEL_write_key)
+#THINGSPEAK_CHANNEL = thingspeak.Channel(id=380347,write_key=THINGSPEAK_CHANNEL_write_key)
 
 def online_update_temperature_uptime(temperature, uptime_hours):
 
     try:
-        THINGSPEAK_CHANNEL.update({1:temperature,4:uptime_hours})
+        # THINGSPEAK_CHANNEL.update({1:temperature,4:uptime_hours})
         logger.debug("uptime report: " + str(uptime_hours))
     except Exception as e:
         pass
         logger.error("could not update online data " + str(e))
 def online_update_SwitchingOn(newVal):
     try:
-        THINGSPEAK_CHANNEL.update({2:newVal})
+        # THINGSPEAK_CHANNEL.update({2:newVal})
     except Exception as e:
         pass
         logger.error("could not update online data " + str(e))
 def online_update_Bootup(temperature):
     try:
-        THINGSPEAK_CHANNEL.update({1:temperature, 3:1})
+        # THINGSPEAK_CHANNEL.update({1:temperature, 3:1})
     except Exception as e:
         pass
         logger.error("could not update online data " + str(e))
@@ -507,7 +507,7 @@ if __name__ == "__main__":
 
     logger.info("starting up...")
     GDATA = GLOBAL_DATA()
-    
+
     # that is the ONLY ! Place where the flask app can access global data !
     app.config.update(_GDATA = GDATA)
     GDATA.setTemperature(readTemperature()) # set values
