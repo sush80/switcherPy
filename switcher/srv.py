@@ -330,12 +330,14 @@ def online_update_temperature_uptime(temperature, uptime_hours):
 def online_update_SwitchingOn(newVal):
     try:
         # THINGSPEAK_CHANNEL.update({2:newVal})
+        pass
     except Exception as e:
         pass
         logger.error("could not update online data " + str(e))
 def online_update_Bootup(temperature):
     try:
         # THINGSPEAK_CHANNEL.update({1:temperature, 3:1})
+        pass
     except Exception as e:
         pass
         logger.error("could not update online data " + str(e))
