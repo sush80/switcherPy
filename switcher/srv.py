@@ -507,7 +507,8 @@ if __name__ == "__main__":
         logger.warning("local clock not up to date, postponing start of server:" + str(now))
         time.sleep(10)
 
-    logger.info("starting up...")
+    logger.info("")
+    logger.info("####### starting up... #######")
     GDATA = GLOBAL_DATA()
 
     # that is the ONLY ! Place where the flask app can access global data !
