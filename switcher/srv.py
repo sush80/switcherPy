@@ -9,6 +9,14 @@ import os,sys
 import logging
 import ptvsd
 import thingspeak
+
+import sys
+sys.path.insert(0, "../sush_utils")
+try:
+    from sush_utils import getSystemUpTime_hours, getSystemUpTime_seconds, getSystemUpTime_string
+    from reconnect import startReconnect
+except ImportError:
+    print('No Import')
 #https://pypi.python.org/pypi/thingspeak/
 
 
@@ -291,26 +299,6 @@ def readTemperature():
         logger.error("could not read temperature: " + str(e))
         return 0.0
 
-def getSystemUpTime_seconds():
-    try:
-        with open('/proc/uptime', 'r') as f:
-            uptime_seconds = float(f.readline().split()[0])
-            return uptime_seconds
-    except:
-        return 0
-
-def getSystemUpTime_hours():
-    uptime_seconds = getSystemUpTime_seconds()
-    return uptime_seconds/(60*60)
-
-def getSystemUpTime_string():
-    try:
-        uptime_seconds = getSystemUpTime_seconds()
-        uptime_string = str(timedelta(seconds = uptime_seconds))
-        return uptime_string
-    except:
-        return "<no uptime>"
-
 
 
 with open("DO_NOT_ADD_TO_GIT_THINGSPEAK_CHANNEL_WRITE_KEY.txt", "r") as myfile:
@@ -523,6 +511,10 @@ if __name__ == "__main__":
 
     online_update_Bootup(readTemperature())# requires valid temperature
     GDATA.process()
+
+    startReconnect(logger)
+
+
     logger.info("Will start flask now")
     
     #use_reloader = False is to prevent this file to be started multiple times, resulting in multiple threads

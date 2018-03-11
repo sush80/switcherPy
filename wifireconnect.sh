@@ -1,4 +1,9 @@
 #!/bin/bash
+# sudo chmod +x ./wifireconnect.sh
+# Test to run script in background:
+#     sudo ./wifireconnect.sh &
+
+
 SERVER=192.168.1.1
 
 sleep 1
