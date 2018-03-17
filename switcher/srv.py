@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request, current_app
+#FIXME_FLASK from flask import Flask, jsonify, render_template, request, current_app
 from datetime import datetime, timedelta
 import time
 import yaml
@@ -58,7 +58,7 @@ ch.setFormatter(formatter)
 # add the handlers to the logger
 logger.addHandler(fh) # FileHandler 
 logger.addHandler(ch)
-app = Flask(__name__)
+#fixme_flask app = Flask(__name__)
 
 class UserInputException(Exception):
     pass
@@ -331,7 +331,7 @@ def online_update_Bootup(temperature):
         logger.error("could not update online data " + str(e))
        
 
-
+''' #fixme_flask 
 @app.route("/index.html", methods=['GET', 'POST'])
 def index_html():
     #logger.debug("index_html")    
@@ -442,7 +442,7 @@ def reset_html():
 @app.route('/doReset')
 def doReset():
     os.system("sudo reboot")
-
+'''
 
 class ThreadPinWorker (Thread):
     def __init__(self, threadID, name, gdata):
@@ -500,7 +500,7 @@ if __name__ == "__main__":
     GDATA = GLOBAL_DATA()
 
     # that is the ONLY ! Place where the flask app can access global data !
-    app.config.update(_GDATA = GDATA)
+    #fixme_flask app.config.update(_GDATA = GDATA)
     GDATA.setTemperature(readTemperature()) # set values
     logger.info("Data intialized -> starting threads.")
 
@@ -515,8 +515,12 @@ if __name__ == "__main__":
     startReconnect(logger)
 
 
-    logger.info("Will start flask now")
+    #fixme_flask logger.info("Will start flask now")
     
     #use_reloader = False is to prevent this file to be started multiple times, resulting in multiple threads
     #                     and duplicated data structurs
-    app.run(host='0.0.0.0', port=5000, debug=True,use_reloader=False)
+    #fixme_flask app.run(host='0.0.0.0', port=5000, debug=True,use_reloader=False)
+
+    while(True):
+        logger.info("Running without flask " + getSystemUpTime_string())
+        time.sleep(60*60)
