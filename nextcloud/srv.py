@@ -40,7 +40,7 @@ app = Flask(__name__)
 @app.route('/')
 def hello_world():
     uptime_hours = getSystemUpTime_string()
-    return 'Hello, World! ' + uptime_hours
+    return 'Hello, World! uptime_hours: ' + uptime_hours
 
 
 class Thread_Uptime (Thread):
@@ -51,7 +51,7 @@ class Thread_Uptime (Thread):
         logger.debug ("Starting Thread_Uptime" )
         while(1):
             uptime_hours = getSystemUpTime_string()
-            logger.info("ThreadUptime - since : " + uptime_hours)
+            logger.info("ThreadUptime - uptime_hours : " + uptime_hours)
             time.sleep(60*60)
         logger.debug ("Exiting " + self.name)
 
