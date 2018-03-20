@@ -84,6 +84,7 @@ class GLOBAL_DATA():
         GPIO.setup(self._ledPinNumber, GPIO.OUT) # Set pin mode as output
         GPIO.output(self._ledPinNumber, GPIO.HIGH)
 
+    '''
     def isManualOverrideFlagSet(self):
         self._mutex.acquire()
         val = copy.copy(self._manualOverrideFlag)
@@ -123,10 +124,11 @@ class GLOBAL_DATA():
     def yaml_data_get(self):
         self._mutex.acquire()
         try:
-            return copy.copy(self._yamlData)
+            return copy.deepcopy(self._yamlData)
         finally:
             self._mutex.release()
-
+    '''
+    
     def _convertToTime(self, aString):
         try:
             return datetime.strptime(aString, '%H:%M').time()
@@ -138,7 +140,7 @@ class GLOBAL_DATA():
 
     def uidStr(self,uid):
         return "UID" + str(uid)
-
+    '''
     def updateConfigFile(self, uid, active="false", start="", end=""):
         self._mutex.acquire()
         logger.info("GLOBAL_DATA updateConfigFile " + hex(id(self)))
@@ -170,21 +172,18 @@ class GLOBAL_DATA():
         finally:
             self._mutex.release()
         return  ""
-
-
+    '''
+    '''
     def yaml_isActive(self, uid):
         self._mutex.acquire()
         try:
             return self._yamlData[self.uidStr(uid)][YAML_FIELD_ACTIVE] == YAML_TRUE
         finally:
             self._mutex.release()
-
+    '''
 
     def _processUid(self, uid):
         now = datetime.now()
-        if now.year < 2017:
-            logger.warning("local clock not up to date, skipping _processUid: " + str(now))
-            return False
         tim = now.time()
 
         [timerIsActive, startTime, stopTime] = self._yaml_info_get(uid)
@@ -201,7 +200,7 @@ class GLOBAL_DATA():
         return False
 
     def process(self):
-        self._mutex.acquire()
+#self._mutex.acquire()
         try:
             pinActiveNew = False
             for uid in range(2):
@@ -226,7 +225,8 @@ class GLOBAL_DATA():
             except:
                 logger.error ("process::Errorhandler turning off failed")
         finally:
-            self._mutex.release()
+            pass
+#self._mutex.release()
 
     def yaml_info_get(self, uid):
         self._mutex.acquire()
@@ -284,7 +284,7 @@ class GLOBAL_DATA():
 
 
 
-
+'''
 def readTemperature():
     try:
         file = open('/sys/bus/w1/devices/28-0317019e9eff/w1_slave')
@@ -298,9 +298,9 @@ def readTemperature():
     except Exception as e:
         logger.error("could not read temperature: " + str(e))
         return 0.0
+'''
 
-
-
+'''
 with open("DO_NOT_ADD_TO_GIT_THINGSPEAK_CHANNEL_WRITE_KEY.txt", "r") as myfile:
     THINGSPEAK_CHANNEL_write_key=myfile.readlines()
     print(THINGSPEAK_CHANNEL_write_key)
@@ -329,7 +329,7 @@ def online_update_Bootup(temperature):
     except Exception as e:
         pass
         logger.error("could not update online data " + str(e))
-       
+'''
 
 ''' #fixme_flask 
 @app.route("/index.html", methods=['GET', 'POST'])
@@ -468,7 +468,7 @@ class ThreadPinWorker (Thread):
 
         logger.debug ("Exiting " + self.name)
 
-
+'''
 class Thread_Temperature_Uptime (Thread):
     def __init__(self, threadID, name, gdata):
         Thread.__init__(self)
@@ -485,7 +485,7 @@ class Thread_Temperature_Uptime (Thread):
             online_update_temperature_uptime(temperature, uptime_hours)
             time.sleep(60*60)
         logger.debug ("Exiting " + self.name)
-
+'''
 if __name__ == "__main__":
     #start threads
     while(True):
@@ -501,15 +501,15 @@ if __name__ == "__main__":
 
     # that is the ONLY ! Place where the flask app can access global data !
     #fixme_flask app.config.update(_GDATA = GDATA)
-    GDATA.setTemperature(readTemperature()) # set values
+    #GDATA.setTemperature(readTemperature()) # set values
     logger.info("Data intialized -> starting threads.")
 
     THREAD_PINWORKER = ThreadPinWorker(1, "PinWorker", GDATA)
     THREAD_PINWORKER.start()
-    THREAD_TEMPERATURE_UPTIME = Thread_Temperature_Uptime(1, "Thread_Temperature_Uptime", GDATA)
-    THREAD_TEMPERATURE_UPTIME.start()
+    #THREAD_TEMPERATURE_UPTIME = Thread_Temperature_Uptime(2, "Thread_Temperature_Uptime", GDATA)
+    #THREAD_TEMPERATURE_UPTIME.start()
 
-    online_update_Bootup(readTemperature())# requires valid temperature
+    #online_update_Bootup(readTemperature())# requires valid temperature
     GDATA.process()
 
     startReconnect(logger)

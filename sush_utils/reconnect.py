@@ -30,7 +30,7 @@ class ThreadReconnect(Thread):
                     self.log.info('ThreadReconnect : Going to restart')
                     time.sleep(10)
                     os.system("sudo systemctl restart dhcpcd")
-                    self.log.info('ThreadReconnect : restarted')
+                    self.log.info('ThreadReconnect : restarted dhcpcd')
                     time.sleep(120)
                     if self.pingable():
                         self.log.info('ThreadReconnect : connection reestablished')
@@ -53,7 +53,7 @@ class ThreadReconnect(Thread):
             #self.log.debug('is up!')
             return True
         else:
-            self.log.info('ping test failure, server is down!')
+            self.log.info('ThreadReconnect : ping test failure, server is down!')
             return False
 
     
