@@ -19,28 +19,28 @@ class ThreadReconnect(Thread):
     
 
     def run(self):
-        self.log.info('ThreadReconnect : up and running')
+        self.log.info('up and running')
         counter = 60
         while(True):
             try:
                 time.sleep(60)
                 if not self.pingable():
-                    self.log.info('ThreadReconnect : Going to reload')
+                    self.log.info('Going to reload')
                     os.system("sudo systemctl daemon-reload")
-                    self.log.info('ThreadReconnect : Going to restart')
+                    self.log.info('Going to restart')
                     time.sleep(10)
                     os.system("sudo systemctl restart dhcpcd")
-                    self.log.info('ThreadReconnect : restarted dhcpcd')
+                    self.log.info('restarted dhcpcd')
                     time.sleep(120)
                     if self.pingable():
-                        self.log.info('ThreadReconnect : connection reestablished')
+                        self.log.info('connection reestablished')
 
                 if counter == 60:
                     counter = 0
-                    self.log.info("ThreadReconnect : Heartbeat : " + getSystemUpTime_string())
+                    self.log.info("Heartbeat : " + getSystemUpTime_string())
                 counter = counter +1
             except Exception as e:
-                self.log.error("ThreadReconnect : Exception : " + str(e))
+                self.log.error("Exception : " + str(e))
                 time.sleep(10)
 
 
@@ -53,7 +53,7 @@ class ThreadReconnect(Thread):
             #self.log.debug('is up!')
             return True
         else:
-            self.log.info('ThreadReconnect : ping test failure, server is down!')
+            self.log.info('ping test failure, server is down!')
             return False
 
     

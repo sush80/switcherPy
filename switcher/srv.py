@@ -13,7 +13,7 @@ import thingspeak
 import sys
 sys.path.insert(0, "../sush_utils")
 try:
-    from sush_utils import getSystemUpTime_hours, getSystemUpTime_seconds, getSystemUpTime_string
+    from sush_utils import sush_utils
     from reconnect import startReconnect
 except ImportError:
     print('No Import')
@@ -52,7 +52,7 @@ fh.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 # create formatter and add it to the handlers
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(threadName)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 # add the handlers to the logger
@@ -214,13 +214,13 @@ class GLOBAL_DATA():
                 logger.debug ("switching pin to new: " + str(self._pinIsActiveStatus))
                 if self._pinIsActiveStatus:
                     GPIO.output(self._relaisPinNumber, GPIO_RELAIS_ON)
-                    online_update_SwitchingOn(1)
+                    #fixme online_update_SwitchingOn(1)
                 else:
                     GPIO.output(self._relaisPinNumber, GPIO_RELAIS_OFF)
-                    online_update_SwitchingOn(-1)
-        except:
+                    #fixme online_update_SwitchingOn(-1)
+        except Exception as e:
             try:
-                logger.error ("process::Errorhandler turning off ...")
+                logger.error ("process::Errorhandler turning off ..." + str(e))
                 GPIO.output(self._relaisPinNumber, GPIO_RELAIS_OFF)
             except:
                 logger.error ("process::Errorhandler turning off failed")
@@ -481,19 +481,15 @@ class Thread_Temperature_Uptime (Thread):
         while(1):
             temperature = readTemperature()
             self.gdata.setTemperature(temperature)
-            uptime_hours = getSystemUpTime_hours()
+            uptime_hours = fixme sushitils getSystemUpTime_hours()
             online_update_temperature_uptime(temperature, uptime_hours)
             time.sleep(60*60)
         logger.debug ("Exiting " + self.name)
 '''
 if __name__ == "__main__":
-    #start threads
-    while(True):
-        now = datetime.now()
-        if now.year > 2017:
-            break
-        logger.warning("local clock not up to date, postponing start of server:" + str(now))
-        time.sleep(10)
+    mySushUtils = sush_utils.sush_utils(logger)
+    mySushUtils.time_synchronisation_barrier()
+
 
     logger.info("")
     logger.info("####### starting up... #######")
@@ -522,5 +518,5 @@ if __name__ == "__main__":
     #fixme_flask app.run(host='0.0.0.0', port=5000, debug=True,use_reloader=False)
 
     while(True):
-        logger.info("Running without flask " + getSystemUpTime_string())
+        logger.info("Running without flask " + mySushUtils.getSystemUpTime_string())
         time.sleep(60*60)
