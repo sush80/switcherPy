@@ -39,7 +39,7 @@ class sush_utils(object):
         while(True):
             try:
                 ret = subprocess.check_output(['systemctl', 'status', 'systemd-timesyncd'])
-                if "Synchronized to time server" in ret:
+                if "Synchronized to time server" in str(ret):
                     self.logger.info("Time synced with NTP Server")
                     return
                 self.logger.info("No connection to time server, will retry")
