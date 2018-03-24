@@ -74,8 +74,8 @@ class ThreadSimplePinWorker(Thread):
 
     def run(self):
         self.logger.info ("Starting SimplePinWorker")
-        startTimeString = "21:20"
-        endTimeString   = "21:22"
+        startTimeString = "06:00"
+        endTimeString   = "08:00"
         startTime = datetime.strptime(startTimeString, '%H:%M').time()
         endTime   = datetime.strptime(endTimeString  , '%H:%M').time()
         assert(endTime > startTime)

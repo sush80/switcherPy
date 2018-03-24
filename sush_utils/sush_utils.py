@@ -8,7 +8,8 @@ class sush_utils(object):
     def __init__(self, logger):
         self.logger = logger
 
-    def getSystemUpTime_seconds(self):
+    @staticmethod
+    def getSystemUpTime_seconds():
         try:
             with open('/proc/uptime', 'r') as f:
                 uptime_seconds = float(f.readline().split()[0])
@@ -36,6 +37,7 @@ class sush_utils(object):
     '''
     def time_synchronisation_barrier(self, initial_delay_s = 10, poll_intervall_s = 60*10):
         time.sleep(initial_delay_s)
+        self.logger.info("time_synchronisation_barrier starting")
         while(True):
             try:
                 ret = subprocess.check_output(['systemctl', 'status', 'systemd-timesyncd'])
