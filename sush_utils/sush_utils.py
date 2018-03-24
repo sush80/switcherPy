@@ -35,17 +35,17 @@ class sush_utils(object):
         Blocks until systemd-timesyncd has updated local time with a proper one
         from some NTP Server.
     '''
-    def time_synchronisation_barrier(self, initial_delay_s = 10, poll_intervall_s = 60*10):
+    def time_synchronisation_barrier(self, initial_delay_s = 30, poll_intervall_s = 60*10):
         time.sleep(initial_delay_s)
-        self.logger.info("time_synchronisation_barrier starting")
+        self.logger.info("time_synchronisation_barrier : starting")
         while(True):
             try:
                 ret = subprocess.check_output(['systemctl', 'status', 'systemd-timesyncd'])
                 if "Synchronized to time server" in str(ret):
                     self.logger.info("Time synced with NTP Server")
                     return
-                self.logger.info("No connection to time server, will retry")
+                self.logger.info("time_synchronisation_barrier : No connection to time server, will retry")
                 time.sleep(poll_intervall_s)
             except FileNotFoundError:
-                self.logger.warn("Most likely running on non Raspbery -> continue")
+                self.logger.warn("time_synchronisation_barrier : Most likely running on non Raspbery -> continue")
                 return
