@@ -6,7 +6,7 @@ from sush_utils import sush_utils
 
 
 def startReconnect(logger):
-    threadReconnect = ThreadReconnect(1, "PinWorker", logger)
+    threadReconnect = ThreadReconnect(1, "ThreadReconnect", logger)
     threadReconnect.start()
 
 

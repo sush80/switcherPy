@@ -59,6 +59,7 @@ GPIO_RELAIS_OFF = GPIO.LOW
 
 class ThreadSimplePinWorker(Thread):
     def __init__(self, name, logger):
+        Thread.__init__(self)
         self.logger = logger
         self.name = name
         self._relaisPinNumber = 12  # pin12 = GPIO-18
@@ -73,9 +74,8 @@ class ThreadSimplePinWorker(Thread):
 
     def run(self):
         self.logger.info ("Starting SimplePinWorker")
-        ledOn = True
-        startTimeString = "20:52"
-        endTimeString   = "20:53"
+        startTimeString = "21:20"
+        endTimeString   = "21:22"
         startTime = datetime.strptime(startTimeString, '%H:%M').time()
         endTime   = datetime.strptime(endTimeString  , '%H:%M').time()
         assert(endTime > startTime)
