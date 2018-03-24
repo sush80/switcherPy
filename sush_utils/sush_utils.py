@@ -15,13 +15,15 @@ class sush_utils(object):
         except:
             return 0
 
-    def getSystemUpTime_hours(self):
-        uptime_seconds = self.getSystemUpTime_seconds()
+    @staticmethod
+    def getSystemUpTime_hours():
+        uptime_seconds = sush_utils.getSystemUpTime_seconds()
         return uptime_seconds/(60*60)
 
-    def getSystemUpTime_string(self):
+    @staticmethod
+    def getSystemUpTime_string():
         try:
-            uptime_seconds = self.getSystemUpTime_seconds()
+            uptime_seconds = sush_utils.getSystemUpTime_seconds()
             uptime_string = str(timedelta(seconds = uptime_seconds))
             return uptime_string
         except:

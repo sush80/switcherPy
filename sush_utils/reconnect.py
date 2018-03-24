@@ -2,7 +2,7 @@ import os
 from threading import Thread, Lock
 import time
 import logging
-from sush_utils import getSystemUpTime_hours, getSystemUpTime_seconds, getSystemUpTime_string
+from sush_utils import sush_utils
 
 
 def startReconnect(logger):
@@ -37,7 +37,7 @@ class ThreadReconnect(Thread):
 
                 if counter == 60:
                     counter = 0
-                    self.log.info("Heartbeat : " + getSystemUpTime_string())
+                    self.log.info("Heartbeat : " + sush_utils.getSystemUpTime_string())
                 counter = counter +1
             except Exception as e:
                 self.log.error("Exception : " + str(e))
