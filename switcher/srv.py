@@ -11,13 +11,9 @@ import ptvsd
 import thingspeak
 
 import sys
-sys.path.insert(0, "../sush_utils")
-try:
-    from sush_utils import sush_utils
-    from reconnect import startReconnect
-except ImportError:
-    print('No Import')
-#https://pypi.python.org/pypi/thingspeak/
+
+from sush_utils.sush_utils import sush_utils
+from sush_utils.reconnect import startReconnect
 
 
 try:
@@ -25,7 +21,7 @@ try:
     import RPi.GPIO as GPIO
 except:
     #Fallback for PC Development without proper GPIO's attached
-    import RPi_stub.GPIO as GPIO
+    import sush_utils.GPIO_stub as GPIO
 
 #ptvsd.enable_attach("switcher", address = ('0.0.0.0', 3000))
 #Enable the below line of code only if you want the application to wait untill the debugger has attached to it
@@ -33,24 +29,6 @@ except:
 
 
 
-
-
-logger = logging.getLogger('myserver')
-logger.setLevel(logging.DEBUG)
-# create file handler which logs even debug messages
-fh = logging.FileHandler('myserver.log')
-fh.setLevel(logging.DEBUG)
-# create console handler with a higher log level
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-# create formatter and add it to the handlers
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(threadName)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-# add the handlers to the logger
-logger.addHandler(fh) # FileHandler 
-logger.addHandler(ch)
-#fixme_flask app = Flask(__name__)
 
 
 GPIO_RELAIS_ON = GPIO.HIGH
@@ -98,11 +76,31 @@ class ThreadSimplePinWorker(Thread):
                     #else: no need to switch off and off again
 
             except Exception as e:
-                logger.error ("Exception: " + str(e))
-        logger.error ("Exiting " + self.name)
+                self.logger.error ("Exception: " + str(e))
+        self.logger.error ("Exiting " + self.name)
 
 
-if __name__ == "__main__":
+def startSwitcher():
+
+
+
+    logger = logging.getLogger('myserver')
+    logger.setLevel(logging.DEBUG)
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler('myserver.log')
+    fh.setLevel(logging.DEBUG)
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(threadName)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    # add the handlers to the logger
+    logger.addHandler(fh) # FileHandler 
+    logger.addHandler(ch)
+    #fixme_flask app = Flask(__name__)
+
     mySushUtils = sush_utils(logger)
     mySushUtils.time_synchronisation_barrier()
 
@@ -122,6 +120,3 @@ if __name__ == "__main__":
  
     startReconnect(logger)
 
-    while(True):
-        logger.info("Running reduced set of functions" + mySushUtils.getSystemUpTime_string())
-        time.sleep(60*60)

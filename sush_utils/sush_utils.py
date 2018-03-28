@@ -3,13 +3,12 @@ import os
 import time
 import subprocess
 
-class sush_utils(object):
 
-    def __init__(self, logger):
-        self.logger = logger
+
+class system_uptime(object):
 
     @staticmethod
-    def getSystemUpTime_seconds():
+    def seconds_get():
         try:
             with open('/proc/uptime', 'r') as f:
                 uptime_seconds = float(f.readline().split()[0])
@@ -18,18 +17,23 @@ class sush_utils(object):
             return 0
 
     @staticmethod
-    def getSystemUpTime_hours():
-        uptime_seconds = sush_utils.getSystemUpTime_seconds()
+    def hours_get():
+        uptime_seconds = system_uptime.seconds_get()
         return uptime_seconds/(60*60)
 
     @staticmethod
-    def getSystemUpTime_string():
+    def string_get():
         try:
-            uptime_seconds = sush_utils.getSystemUpTime_seconds()
+            uptime_seconds = system_uptime.seconds_get()
             uptime_string = str(timedelta(seconds = uptime_seconds))
             return uptime_string
         except:
             return "<no uptime>"
+
+class sush_utils(object):
+
+    def __init__(self, logger):
+        self.logger = logger
 
     '''
         Blocks until systemd-timesyncd has updated local time with a proper one
