@@ -2,7 +2,7 @@
 After=network.target
 
 [Service]
-ExecStart=python3 switcher.py
+ExecStart=/usr/bin/python3 /home/pi/switcherPy/switcher.py
 WorkingDirectory=/home/pi/switcherPy
 StandardOutput=inherit
 StandardError=inherit

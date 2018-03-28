@@ -1,8 +1,14 @@
 https://www.raspberrypi.org/documentation/linux/usage/systemd.md
 
-sudo cp Systemd_script.txt catmyServer.service
 
-sudo chown pi myServer.service 
-sudo chmod +x myServer.service 
+sudo cp Systemd_script.txt /etc/systemd/system/myServer.service
 
+sudo chown pi /etc/systemd/system/myServer.service 
+sudo chmod +x /etc/systemd/system/myServer.service 
+
+
+TEST: 
+sudo systemctl start myscript.service
+
+INSTALL:
 sudo systemctl enable myServer.service 
