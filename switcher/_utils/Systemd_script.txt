@@ -2,8 +2,8 @@
 After=network.target
 
 [Service]
-ExecStart=/home/pi/miniconda3/bin/python srv.py
-WorkingDirectory=/home/pi/Documents/switcherPy/switcher
+ExecStart=python3 switcher.py
+WorkingDirectory=/home/pi/switcherPy
 StandardOutput=inherit
 StandardError=inherit
 Restart=no
