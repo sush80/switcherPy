@@ -101,6 +101,9 @@ def startSwitcher():
     logger.addHandler(ch)
     #fixme_flask app = Flask(__name__)
 
+    logger.info("")
+    logger.info("####### starting up... #######")
+    
     mySushUtils = sush_utils(logger)
     mySushUtils.time_synchronisation_barrier()
 
@@ -112,8 +115,6 @@ def startSwitcher():
     assert(b > now)
     '''
 
-    logger.info("")
-    logger.info("####### starting up... #######")
 
     THREAD_PINWORKER = ThreadSimplePinWorker("SimplePinWorker", logger)
     THREAD_PINWORKER.start()

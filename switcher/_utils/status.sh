@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo systemctl status myServer.service
+sudo systemctl status mySwitcher.service

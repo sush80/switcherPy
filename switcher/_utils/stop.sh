@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo systemctl stop myServer.service
+sudo systemctl stop mySwitcher.service

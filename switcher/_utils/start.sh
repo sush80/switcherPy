@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo systemctl start myServer.service
+sudo systemctl start mySwitcher.service

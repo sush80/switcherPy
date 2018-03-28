@@ -1,14 +1,14 @@
 https://www.raspberrypi.org/documentation/linux/usage/systemd.md
 
 
-sudo cp Systemd_script.txt /etc/systemd/system/myServer.service
+sudo cp Systemd_script.txt /etc/systemd/system/mySwitcher.service
 
-sudo chown pi /etc/systemd/system/myServer.service 
-sudo chmod +x /etc/systemd/system/myServer.service 
+sudo chown pi /etc/systemd/system/mySwitcher.service 
+sudo chmod +x /etc/systemd/system/mySwitcher.service 
 
 
 TEST: 
-sudo systemctl start myscript.service
+sudo systemctl start mySwitcher.service
 
-INSTALL:
-sudo systemctl enable myServer.service 
+INSTALL TO RUN ON EVERY REBOOT:
+sudo systemctl enable mySwitcher.service 
