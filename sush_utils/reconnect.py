@@ -24,24 +24,28 @@ class ThreadReconnect(Thread):
         while(True):
             try:
                 time.sleep(60)
-                if not self.pingable():
-                    self.log.info('Going to reload')
-                    os.system("sudo systemctl daemon-reload")
-                    self.log.info('Going to restart')
-                    time.sleep(10)
-                    os.system("sudo systemctl restart dhcpcd")
-                    self.log.info('restarted dhcpcd')
-                    time.sleep(120)
-                    if self.pingable():
-                        self.log.info('connection reestablished')
 
-                if counter == 60:
-                    counter = 0
-                    self.log.info("Heartbeat : " + system_uptime.string_get())
-                counter = counter +1
+                if self.pingable():
+                    continue
+                time.sleep(60)
+                if self.pingable():
+                    continue
+                time.sleep(60)
+                if self.pingable():
+                    continue
+                self.log.info('Going to reload')
+                os.system("sudo systemctl daemon-reload")
+                self.log.info('Going to restart')
+                time.sleep(10)
+                os.system("sudo systemctl restart dhcpcd")
+                self.log.info('restarted dhcpcd')
+                time.sleep(120)
+                if self.pingable():
+                    self.log.info('connection reestablished')
+
             except Exception as e:
                 self.log.error("Exception : " + str(e))
-                time.sleep(10)
+                time.sleep(60)
 
 
     def pingable(self):
