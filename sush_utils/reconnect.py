@@ -5,7 +5,7 @@ import logging
 from sush_utils.sush_utils import system_uptime
 
 
-def startReconnect(logger):
+def start_wifi_reconnect(logger):
     threadReconnect = ThreadReconnect(1, "ThreadReconnect", logger)
     threadReconnect.start()
 
@@ -20,7 +20,6 @@ class ThreadReconnect(Thread):
 
     def run(self):
         self.log.info('up and running')
-        counter = 60
         while(True):
             try:
                 time.sleep(60)

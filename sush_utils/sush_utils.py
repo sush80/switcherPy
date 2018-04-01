@@ -30,26 +30,21 @@ class system_uptime(object):
         except:
             return "<no uptime>"
 
-class sush_utils(object):
-
-    def __init__(self, logger):
-        self.logger = logger
-
-    '''
-        Blocks until systemd-timesyncd has updated local time with a proper one
-        from some NTP Server.
-    '''
-    def time_synchronisation_barrier(self, initial_delay_s = 30, poll_intervall_s = 60*10):
-        time.sleep(initial_delay_s)
-        self.logger.info("time_synchronisation_barrier : starting")
-        while(True):
-            try:
-                ret = subprocess.check_output(['systemctl', 'status', 'systemd-timesyncd'])
-                if "Synchronized to time server" in str(ret):
-                    self.logger.info("Time synced with NTP Server")
-                    return
-                self.logger.info("time_synchronisation_barrier : No connection to time server, will retry")
-                time.sleep(poll_intervall_s)
-            except FileNotFoundError:
-                self.logger.warn("time_synchronisation_barrier : Most likely running on non Raspbery -> continue")
+'''
+    Blocks until systemd-timesyncd has updated local time with a proper one
+    from some NTP Server.
+'''
+def time_synchronisation_barrier(logger, initial_delay_s = 30, poll_intervall_s = 60*10):
+    time.sleep(initial_delay_s)
+    logger.info("time_synchronisation_barrier : starting")
+    while(True):
+        try:
+            ret = subprocess.check_output(['systemctl', 'status', 'systemd-timesyncd'])
+            if "Synchronized to time server" in str(ret):
+                logger.info("Time synced with NTP Server")
                 return
+            logger.info("time_synchronisation_barrier : No connection to time server, will retry")
+            time.sleep(poll_intervall_s)
+        except FileNotFoundError:
+            logger.warn("time_synchronisation_barrier : Most likely running on non Raspbery -> continue")
+            return
