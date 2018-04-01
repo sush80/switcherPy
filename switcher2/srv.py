@@ -84,7 +84,7 @@ class SharedData(object):
         
         
 
-def start_flask():
+def start_flask_not_returning():
     
     app = Flask(__name__)
 

@@ -1,5 +1,5 @@
 
-from switcher2.srv import start_pinworker, start_flask
+from switcher2.srv import start_pinworker, start_flask_not_returning
 from sush_utils.reconnect import start_wifi_reconnect, system_uptime
 from sush_utils.sush_utils import time_synchronisation_barrier
 
@@ -31,8 +31,7 @@ if __name__ == "__main__":
 
     start_wifi_reconnect(logger)
     start_pinworker(logger)
-    start_flask()
-
-    while(True):
-        logger.info("Running reduced set of functions : " + system_uptime.string_get())
-        time.sleep(60*60) 
+    try:
+        start_flask_not_returning()
+    except Exception as e:
+        logger.error("Flask crashed : " + str(e))
