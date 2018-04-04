@@ -44,8 +44,8 @@ class ThreadWifiReconnect(Thread):
                 time.sleep(60)
 
     def test_online(self, retries = 5, sleep_time = 60):
-        for i in range(retries):
-            if self.pingable()
+        for range(retries):
+            if self.pingable():
                 return True
             time.sleep(sleep_time)
         return False
