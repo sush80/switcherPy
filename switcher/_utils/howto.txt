@@ -12,3 +12,6 @@ sudo systemctl start mySwitcher.service
 
 INSTALL TO RUN ON EVERY REBOOT:
 sudo systemctl enable mySwitcher.service 
+
+REMOVE AUTORUN ON REBOOT:
+sudo systemctl disable  mySwitcher.service 

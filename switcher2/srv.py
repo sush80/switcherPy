@@ -96,7 +96,7 @@ def start_flask_not_returning():
         retVal = retVal + "start -> end: " + start + " -> " + end
         return retVal
 
-    app.run(host='0.0.0.0', port=5000, debug=True,use_reloader=False)
+    app.run(host='0.0.0.0', port=5000, debug=False,use_reloader=False)
 
 
 
@@ -120,13 +120,13 @@ class ThreadSimplePinWorker(Thread):
 
     def run(self):
         self.logger.info ("Starting SimplePinWorker")
-        [startTime , endTime] = self._sharedData.timer_get()
-        assert(endTime >= startTime)
         relaisPinStatus = GPIO_RELAIS_OFF
+        GPIO.output(self._relaisPinNumber, GPIO_RELAIS_OFF)
         while(1):
             try:
                 time.sleep(10)
-                now = datetime.now().time() # e.g. datetime.time(20, 39, 46, 477125)
+                [startTime , endTime] = self._sharedData.timer_get()
+                now = datetime.now().time() # e.g. datetime.time(11, 39, 30, 155284)
                 if (now > startTime) and (now < endTime):
                     if GPIO_RELAIS_OFF == relaisPinStatus:
                         self.logger.info ("switching ON")

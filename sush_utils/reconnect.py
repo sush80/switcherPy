@@ -6,11 +6,11 @@ from sush_utils.sush_utils import system_uptime
 
 
 def start_wifi_reconnect(logger):
-    threadReconnect = ThreadReconnect(1, "ThreadReconnect", logger)
+    threadReconnect = ThreadWifiReconnect(1, "wifi_recoonnect", logger)
     threadReconnect.start()
 
 
-class ThreadReconnect(Thread):
+class ThreadWifiReconnect(Thread):
     def __init__(self, threadID, name, logger):
         Thread.__init__(self)
         self.log = logger
@@ -24,27 +24,31 @@ class ThreadReconnect(Thread):
             try:
                 time.sleep(60)
 
-                if self.pingable():
+                if self.test_online():
                     continue
-                time.sleep(60)
-                if self.pingable():
-                    continue
-                time.sleep(60)
-                if self.pingable():
-                    continue
+                
                 self.log.info('Going to reload')
                 os.system("sudo systemctl daemon-reload")
                 self.log.info('Going to restart')
-                time.sleep(10)
+                time.sleep(30)
                 os.system("sudo systemctl restart dhcpcd")
                 self.log.info('restarted dhcpcd')
                 time.sleep(120)
-                if self.pingable():
+                if self.test_online():
                     self.log.info('connection reestablished')
+                else:
+                    self.log.info("could not reestablish connection")
 
             except Exception as e:
                 self.log.error("Exception : " + str(e))
                 time.sleep(60)
+
+    def test_online(self, retries = 5, sleep_time = 60):
+        for i in range(retries):
+            if self.pingable()
+                return True
+            time.sleep(sleep_time)
+        return False
 
 
     def pingable(self):
@@ -56,7 +60,6 @@ class ThreadReconnect(Thread):
             #self.log.debug('is up!')
             return True
         else:
-            self.log.info('ping test failure, server is down!')
             return False
 
     

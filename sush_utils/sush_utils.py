@@ -48,3 +48,5 @@ def time_synchronisation_barrier(logger, initial_delay_s = 30, poll_intervall_s 
         except FileNotFoundError:
             logger.warn("time_synchronisation_barrier : Most likely running on non Raspbery -> continue")
             return
+
+    
