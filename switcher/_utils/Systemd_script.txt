@@ -1,5 +1,5 @@
 [Unit]
-After=network.target
+After=multi-user.target
 
 [Service]
 ExecStart=/usr/bin/python3 /home/pi/switcherPy/switcher.py
@@ -8,6 +8,7 @@ StandardOutput=inherit
 StandardError=inherit
 Restart=no
 User=pi
+Type=idle
 
 [Install]
 WantedBy=multi-user.target

@@ -2,18 +2,17 @@
 from switcher2.srv import start_pinworker, start_flask_not_returning
 from sush_utils.reconnect import start_wifi_reconnect, system_uptime
 from sush_utils.sush_utils import time_synchronisation_barrier
-
-import multiprocessing
+from sush_utils.simpleFlask import start_simple_flask_not_returning
 
 import logging
 import time
 
 
 if __name__ == "__main__":
-    logger = logging.getLogger('switcher2')
+    logger = logging.getLogger('switcher2b')
     logger.setLevel(logging.DEBUG)
     # create file handler which logs even debug messages
-    fh = logging.FileHandler('switcher2.log')
+    fh = logging.FileHandler('switcher2b.log')
     fh.setLevel(logging.DEBUG)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
@@ -33,14 +32,7 @@ if __name__ == "__main__":
 
     start_wifi_reconnect(logger)
     start_pinworker(logger)
-
-    multiprocessing.set_start_method('spawn')
-    #q = multiprocessing.Queue()
-    p = multiprocessing.Process(target=start_flask_not_returning)
-    p.start()
-    #print(q.get())
-    #p.join()
-    
-    while(1):
-        logger.info("running switcher 2b")
-        time.sleep(60*60)
+    try:
+        start_flask_not_returning()
+    except Exception as e:
+        logger.error("Flask crashed : " + str(e))

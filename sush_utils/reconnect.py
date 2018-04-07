@@ -81,4 +81,4 @@ if __name__ == "__main__":
     # add the handlers to the logger
     logger.addHandler(fh) # FileHandler 
     logger.addHandler(ch)
-    startReconnect(logger)
+    start_wifi_reconnect(logger)
