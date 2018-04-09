@@ -81,24 +81,6 @@ class SharedData(object):
             SharedData.__instance = SharedData.__SharedData()
     def __getattr__(self, name):
         return getattr(self.__instance, name)
-        
-        
-
-def start_flask_not_returning():
-    
-    app = Flask(__name__)
-
-    @app.route('/')
-    def hello_world():
-        uptime = system_uptime.string_get()
-        [start, end] = SharedData().timer_get_as_string()
-        retVal = 'Hello, World! uptime: ' + uptime + "<br>"
-        retVal = retVal + "start -> end: " + start + " -> " + end
-        return retVal
-
-    app.run(host='0.0.0.0', port=5000, debug=False,use_reloader=False)
-
-
 
 
 

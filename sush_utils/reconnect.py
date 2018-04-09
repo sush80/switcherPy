@@ -2,7 +2,10 @@ import os
 from threading import Thread, Lock
 import time
 import logging
-from sush_utils.sush_utils import system_uptime
+try:
+    from sush_utils.sush_utils import system_uptime #import if this file is a lib
+except:
+    from sush_utils import system_uptime #import fallback if file runs locally
 
 
 def start_wifi_reconnect(logger):
