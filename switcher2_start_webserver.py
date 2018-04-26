@@ -1,6 +1,5 @@
 
-from switcher2.srv import start_pinworker
-from sush_utils.reconnect import start_wifi_reconnect, system_uptime
+from switcher2.flasker import start_simple_flask_not_returning
 from sush_utils.sush_utils import time_synchronisation_barrier
 
 import logging
@@ -8,10 +7,11 @@ import time
 
 
 if __name__ == "__main__":
-    logger = logging.getLogger('switcher2c')
+    import logging
+    logger = logging.getLogger('flask')
     logger.setLevel(logging.DEBUG)
     # create file handler which logs even debug messages
-    fh = logging.FileHandler('switcher2c.log')
+    fh = logging.FileHandler('flask.log')
     fh.setLevel(logging.DEBUG)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
@@ -23,18 +23,14 @@ if __name__ == "__main__":
     # add the handlers to the logger
     logger.addHandler(fh) # FileHandler 
     logger.addHandler(ch)
-    #fixme_flask app = Flask(__name__)
 
-    logger.info("__________________________")
-    
-    time_synchronisation_barrier(logger)
 
+    time_synchronisation_barrier(logger) # to not read wrong cfg fiel modification time
+
+    logger.info("starting flask now...")
     try:
-        start_wifi_reconnect(logger)
-        start_pinworker(logger)
-        while(1):
-            time.sleep(60*60)
-            logger.info("up and running")
+        start_simple_flask_not_returning()
     except Exception as e:
-        logger.error("thread crashed : " + str(e))
-    logger.info("going home")
+        logger.error("Exception : " + str(e))
+    
+    logger.info("flask done - exit")
