@@ -10,8 +10,6 @@ import logging
 
 import sys
 
-from sush_utils.jsoner import jsoner
-
 from switcher2.shared_data import shared_data
 
 
@@ -57,11 +55,14 @@ class ThreadSimplePinWorker(Thread):
         self.logger.info ("Starting SimplePinWorker")
         relaisPinStatus = GPIO_RELAIS_OFF
         GPIO.output(self._relaisPinNumber, GPIO_RELAIS_OFF)
+        [startTime , endTime, active] = self._sharedData.load(returnType = "string")
+        self.logger.info(" startTime: " + startTime)
+        self.logger.info(" endTime:   " + endTime)
+        self.logger.info(" active:    " + active)
         while(1):
             try:
                 time.sleep(10)
-                self._sharedData.load_from_file()
-                [startTime , endTime, active] = self._sharedData.timer_get()
+                [startTime , endTime, active] = self._sharedData.load(returnType = "native")
                 if (not active):
                     if (GPIO_RELAIS_ON == relaisPinStatus):
                         self.logger.info ("switching off because timer was deactivated")
@@ -70,7 +71,7 @@ class ThreadSimplePinWorker(Thread):
                     continue
 
                 now = datetime.now().time() # e.g. datetime.time(11, 39, 30, 155284)
-                if (now > startTime) and (now < endTime):
+                if (now >= startTime) and (now < endTime):
                     if GPIO_RELAIS_OFF == relaisPinStatus:
                         self.logger.info ("switching ON")
                         GPIO.output(self._relaisPinNumber, GPIO_RELAIS_ON)

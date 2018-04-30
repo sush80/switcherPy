@@ -30,18 +30,20 @@ class jsoner():
 
 if __name__ == "__main__":
     import pprint
-    dictionary = {'hello':'world'}
-    my_jsoner = jsoner("__test.json")
-    pprint.pprint(dictionary)
+    dictio = {"timer_start": "06:00", "timer_end": "06:00", "timer_active": False }
+    my_jsoner = jsoner("__test.json", dictio)
+    pprint.pprint(dictio)
     assert not my_jsoner.has_new_data()
-    my_jsoner.write(dictionary)
+    my_jsoner.write(dictio)
     assert my_jsoner.has_new_data()
     b = my_jsoner.read()
     assert not my_jsoner.has_new_data()
     pprint.pprint(b)
-    b["hello"] = "newWorld"
+    b["timer_end"] = "newWorld"
     my_jsoner.write(b)
     assert my_jsoner.has_new_data()
+    c = my_jsoner.read()
+    pprint.pprint(c)
     print("DONE ALL OK")
 
     

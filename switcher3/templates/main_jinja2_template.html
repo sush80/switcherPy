@@ -1,0 +1,53 @@
+<!-- 
+http://jonthornton.github.io/jquery-timepicker/
+
+-->
+
+
+<!DOCTYPE html>
+<head>
+    <title>{{ title }}</title>
+</head>
+
+<body>
+
+    <h1><p style="color:red">{{error_text}}</p></h1>
+    <div hidden>ErrorText {{error_text}}</div>
+
+    <h1><a href="index.html">Main Page</a></h1>
+    Server-time: {{ time }}<br>
+    UpTime: {{ upTime }}  [hh:mm:ss:ms]<br>
+    Temperature: {{temperature}} degC <br>
+    
+    
+    <h3> Current Status:</h3>
+    {% if current_status_active == 'on' %}
+    <p style="color:green">On</p>
+    {% else %}
+    <p style="color:red">Off</p>
+    {% endif %}
+    <div hidden>CurrentStatus {{current_status_active}}</div>
+    
+  
+    <h3> <a href="timepicker.html?start={{uid0_start}}&stop={{uid0_stop}}" >Change Timer</a></h3>
+    
+    {% if uid0_active == 'true' %}
+    <p style="color:green">On</p>
+    {% else %}
+    <p style="color:red">Off</p>
+    {% endif %}
+    Start: {{uid0_start}} <br>
+    Stop: {{uid0_stop}} <br>    
+    <div hidden>UID0_active {{uid0_active}}</div> 
+    <div hidden>UID0_start {{uid0_start}}</div> 
+    <div hidden>UID0_stop {{uid0_stop}}</div>
+
+
+    <h3>Online Statistics</h3>
+    <a href="https://thingspeak.com/channels/380347">link</a>
+    <br><br><br><br><br><br><br><br><br>
+
+    <h3> <a href="reset.html" >System reset</a></h3>
+    
+</body>
+</html>
