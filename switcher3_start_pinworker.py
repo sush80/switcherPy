@@ -30,7 +30,7 @@ if __name__ == "__main__":
     time_synchronisation_barrier(logger)
 
     try:
-        start_wifi_reconnect(logger)
+        #start_wifi_reconnect(logger)
         start_pinworker(logger)
         while(1):
             time.sleep(60*60)
