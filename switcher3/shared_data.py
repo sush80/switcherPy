@@ -24,6 +24,8 @@ class shared_data(object):
             self._jsoner = jsoner(CFG_FILE, self._data_dict)
             self.load(force = True)
 
+        def has_new_data(self):
+            return self._jsoner.has_new_data()
 
         def load(self, force = False, returnType = "native"):
             '''

@@ -1,7 +1,7 @@
 
 from switcher3.pin_worker import start_pinworker
 from sush_utils.reconnect import start_wifi_reconnect, system_uptime
-from sush_utils.sush_utils import time_synchronisation_barrier
+from sush_utils.sush_utils import time_synchronisation_barrier, disable_wifi_power_managment
 
 import logging
 import time
@@ -30,7 +30,7 @@ if __name__ == "__main__":
     time_synchronisation_barrier(logger)
 
     try:
-        #start_wifi_reconnect(logger)
+        disable_wifi_power_managment(logger)
         start_pinworker(logger)
         while(1):
             time.sleep(60*60)

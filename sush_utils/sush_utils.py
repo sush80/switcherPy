@@ -49,7 +49,16 @@ def time_synchronisation_barrier(logger, initial_delay_s = 30, poll_intervall_s 
             logger.warn("time_synchronisation_barrier : Most likely running on non Raspbery -> continue")
             return
 
-    
+
+def disable_wifi_power_managment(logger, initial_delay_s = 30):
+    time.sleep(initial_delay_s)
+    logger.info("disable_wifi_power_managment : starting")
+    try:
+        ret = subprocess.check_output(['sudo', 'iwconfig', 'wlan0', 'power', 'off'])
+        logger.info("disable_wifi_power_managment : done : " + str(ret))
+    except :
+        logger.warn("disable_wifi_power_managment : Most likely running on non Raspbery -> continue")
+
 
 def DS18B20_temperature_get(devicename = '/sys/bus/w1/devices/28-0317019e9eff/w1_slave'):
     '''
