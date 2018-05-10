@@ -21,9 +21,9 @@ def start_simple_flask_not_returning(logger):
         upTimeString = system_uptime.string_get()
         sharedData = current_app._get_current_object().config["_SHAREDDATA"]
         logger = current_app._get_current_object().config["_LOGGER"]
-        logger.debug("starting reading temperature")
+        #logger.debug("starting reading temperature")
         temperature = DS18B20_temperature_get(devicename = '/sys/bus/w1/devices/28-0317019e9eff/w1_slave')
-        logger.debug("Done reading temperature : " + temperature)
+        #logger.debug("Done reading temperature : " + temperature)
 
         if request.form.get('action') == "setAlarmTimes":
             startTime = request.form.get('start')

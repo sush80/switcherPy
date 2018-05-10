@@ -63,7 +63,7 @@ class ThreadSimplePinWorker(Thread):
             try:
                 time.sleep(10)
                 new_data_from_file = self._sharedData.has_new_data()
-                [startTime , endTime, active] = self._sharedData.load(returnType = "native")
+                [startTime , endTime, active] = self._sharedData.load(force = new_data_from_file,returnType = "native")
                 if new_data_from_file:
                     self.logger.info("New Data from file: " + str(startTime) + " " + str(endTime)  + " " + str(active))
                 if (not active):
