@@ -50,3 +50,16 @@ def time_synchronisation_barrier(logger, initial_delay_s = 30, poll_intervall_s 
             return
 
     
+
+def temperature_get(devicename = '/sys/bus/w1/devices/28-0317019e9eff/w1_slave'):
+    try:
+        file = open(devicename)
+        filecontent = file.read()
+        file.close()
+
+        stringvalue = filecontent.split("\n")[1].split(" ")[9]
+        temperature = float(stringvalue[2:]) / 1000
+        retVal = '%6.2f' % temperature 
+        return retVal
+    except Exception as e:
+        return "0"
