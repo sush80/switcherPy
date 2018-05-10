@@ -51,11 +51,13 @@ def time_synchronisation_barrier(logger, initial_delay_s = 30, poll_intervall_s 
 
     
 
-def temperature_get(devicename = '/sys/bus/w1/devices/28-0317019e9eff/w1_slave'):
+def DS18B20_temperature_get(devicename = '/sys/bus/w1/devices/28-0317019e9eff/w1_slave'):
+    '''
+        Takes approx. 1 second to complete
+    '''
     try:
-        file = open(devicename)
-        filecontent = file.read()
-        file.close()
+        with open(devicename) as file:
+            filecontent = file.read()
 
         stringvalue = filecontent.split("\n")[1].split(" ")[9]
         temperature = float(stringvalue[2:]) / 1000

@@ -3,7 +3,7 @@ import logging
 import time
 
 
-from sush_utils.sush_utils import system_uptime, temperature_get
+from sush_utils.sush_utils import system_uptime, DS18B20_temperature_get
 from switcher3.shared_data import shared_data
 
 HTML_NEWLINE = "<br>"
@@ -22,7 +22,7 @@ def start_simple_flask_not_returning(logger):
         sharedData = current_app._get_current_object().config["_SHAREDDATA"]
         logger = current_app._get_current_object().config["_LOGGER"]
         logger.debug("starting reading temperature")
-        temperature = temperature_get()
+        temperature = DS18B20_temperature_get(devicename = '/sys/bus/w1/devices/28-0317019e9eff/w1_slave')
         logger.debug("Done reading temperature : " + temperature)
 
         if request.form.get('action') == "setAlarmTimes":
