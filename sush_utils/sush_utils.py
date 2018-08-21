@@ -72,5 +72,11 @@ def DS18B20_temperature_get(devicename = '/sys/bus/w1/devices/28-0317019e9eff/w1
         temperature = float(stringvalue[2:]) / 1000
         retVal = '%6.2f' % temperature 
         return retVal
-    except Exception as e:
+    except:
         return "0"
+
+def is_elapsed(start_time, timeout_seconds):
+    assert(type(start_time) == type(time.time()))
+    now = time.time()
+    delta = now - start_time
+    return delta > timeout_seconds

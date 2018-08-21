@@ -18,3 +18,6 @@ def cleanup():
     #print("PIN:cleanup")
 def setwarnings(flag):
     print("PIN:setwarnings" + str( flag))
+
+def input(a):
+    return True

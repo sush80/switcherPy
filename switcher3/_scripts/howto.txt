@@ -1,0 +1,31 @@
+https://www.raspberrypi.org/documentation/linux/usage/systemd.md
+https://www.freedesktop.org/software/systemd/man/systemd.service.html
+
+
+sudo cp Systemd_script_pinworker.txt /etc/systemd/system/mySwitcher_pinworker.service
+sudo chown pi /etc/systemd/system/mySwitcher_pinworker.service 
+sudo chmod +x /etc/systemd/system/mySwitcher_pinworker.service 
+# TEST IF IT STARTS: 
+sudo systemctl start mySwitcher_pinworker.service
+sudo systemctl status mySwitcher_pinworker.service
+
+
+sudo cp Systemd_script_webserver.txt /etc/systemd/system/mySwitcher_webserver.service
+sudo chown pi /etc/systemd/system/mySwitcher_webserver.service 
+sudo chmod +x /etc/systemd/system/mySwitcher_webserver.service 
+# TEST IF IT STARTS: 
+sudo systemctl start mySwitcher_webserver.service
+sudo systemctl status mySwitcher_webserver.service
+
+
+
+
+
+INSTALL TO RUN ON EVERY REBOOT:
+sudo systemctl enable mySwitcher_pinworker.service 
+sudo systemctl enable mySwitcher_webserver.service 
+
+
+REMOVE AUTORUN ON REBOOT
+ ! Do not forget to call this before deleting any files !
+sudo systemctl disable  mySwitcher.service 
