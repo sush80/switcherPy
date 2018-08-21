@@ -1,0 +1,14 @@
+[Unit]
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/pi/switcherPy/switcher3_start_webserver.py
+WorkingDirectory=/home/pi/switcherPy
+StandardOutput=inherit
+StandardError=inherit
+Restart=no
+User=pi
+Type=idle
+
+[Install]
+WantedBy=multi-user.target
