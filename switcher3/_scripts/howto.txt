@@ -5,6 +5,8 @@ https://www.freedesktop.org/software/systemd/man/systemd.service.html
 sudo cp Systemd_script_pinworker.txt /etc/systemd/system/mySwitcher_pinworker.service
 sudo chown pi /etc/systemd/system/mySwitcher_pinworker.service 
 sudo chmod +x /etc/systemd/system/mySwitcher_pinworker.service 
+
+
 # TEST IF IT STARTS: 
 sudo systemctl start mySwitcher_pinworker.service
 sudo systemctl status mySwitcher_pinworker.service
@@ -13,6 +15,8 @@ sudo systemctl status mySwitcher_pinworker.service
 sudo cp Systemd_script_webserver.txt /etc/systemd/system/mySwitcher_webserver.service
 sudo chown pi /etc/systemd/system/mySwitcher_webserver.service 
 sudo chmod +x /etc/systemd/system/mySwitcher_webserver.service 
+
+
 # TEST IF IT STARTS: 
 sudo systemctl start mySwitcher_webserver.service
 sudo systemctl status mySwitcher_webserver.service
